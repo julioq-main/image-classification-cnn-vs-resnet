@@ -12,7 +12,9 @@ training:
  momentum: 0.9
 
  batch_size: 32
- epochs: 2
+ epochs: 1
 
+eval:
+ advanced_metrics: true
 
 model: "resnet"
