@@ -1,0 +1,26 @@
+Name	ID	StartYear	EndYear
+Achaemenid architecture	1	-550	-220
+American Foursquare architecture	2	1890	1930
+American craftsman style	3	1860	1930
+Ancient Egyptian architecture	5	-2580	-2400
+Art Deco architecture	8	1930	2000
+Art Nouveau architecture	9	1895	1915
+Baroque architecture	10	1600	1700
+Bauhaus architecture	11	1919	1933
+Beaux-Arts architecture	12	1671	1968
+Byzantine architecture	15	600	800
+Chicago school architecture	17	1900	1970
+Colonial architecture	20	1600	1900
+Deconstructivism	22	1980	2000
+Edwardian architecture	26	1901	1914
+Georgian architecture	30	1720	1840
+Gothic architecture	31	1200	1600
+Greek Revival architecture	33	1800	1900
+International style	37	1920	1930
+Novelty architecture	52	1900	2000
+Palladian architecture	53	1500	1900
+Postmodern architecture	55	1970	2000
+Queen Anne architecture(Victorian)	58	1880	1910
+Romanesque architecture	62	800	1200
+Russian Revival architecture	64	1825	1917
+Tudor Revival architecture	69	1900	1920

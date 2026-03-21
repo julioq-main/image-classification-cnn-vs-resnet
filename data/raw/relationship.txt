@@ -1,0 +1,4 @@
+1	follows
+2	revives
+3	against
+4	part of

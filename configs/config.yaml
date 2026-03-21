@@ -1,0 +1,18 @@
+data:
+ train_dir: "data/processed/train"
+ test_dir: "data/processed/test"
+ val_dir: "data/processed/val"
+ mean: [0.4963, 0.4963, 0.4894]
+ std: [0.2304, 0.2314, 0.2542]
+ num_workers: 4
+
+training:
+ optimizer: "sgd"
+ lr: 0.001
+ momentum: 0.9
+
+ batch_size: 32
+ epochs: 2
+
+
+model: "resnet"

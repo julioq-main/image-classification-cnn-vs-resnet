@@ -1,0 +1,7 @@
+This dataset contains approximately 5000 images from 25 architectural styles. The raw images are downloaded from Wikimedia Commons ("http://commons.wikimedia.org/wiki/Category:Architecture_by_style"), with the first 5000 images from each style. We manually filtered the images to exclude images of interior decoration, building parts, or severe scale and orientation change, and resulted in a total of 5000 images. 
+
+For reference, the time period and style relationships between styles checked with Wikipedia are provided in the txt files.
+
+Some of the images are collected from the 4-class dataset, reported in the paper "Visual pattern discovery for architecture image classiﬁcation and product image search".
+
+Please contact Zhe Xu (xz303010@gmail.com) if you have some questions or advices to the dataset.
