@@ -6,15 +6,22 @@ data:
  std: [0.2304, 0.2314, 0.2542]
  num_workers: 4
 
-training:
- optimizer: "sgd"
- lr: 0.001
- momentum: 0.9
+seed: 1234
 
+training:
+ optimizer:
+  name: "sgd"
+  lr: 0.001
+  momentum: 0.9
+ 
  batch_size: 32
- epochs: 1
+ epochs: 10
+ loss_goal: 0.1
+ patience: 5
 
 eval:
  advanced_metrics: true
 
-model: "resnet"
+model: 
+ name: "resnet"
+ num_classes: 25

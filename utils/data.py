@@ -1,13 +1,10 @@
 """
 API to get dataloader
-TODO
-Dataset sanity check(explore that)
-yaml augmentations(Horizontal_flip, aberration, saturation...)
-set seed?
-add pin_memory to config?
-debug dataset (100 samples)?
-some data analysis?
-documentation and more comments? Should improve on that
+TODO Dataset sanity check(explore that)
+TODO debug dataset (100 samples)?
+TODO some data analysis? (PROBABLY IN ANOTHER SCRIPT data/scripts/analysis.py?)
+TODO doc
+TODO make augmentation possible through config
 """
 
 
@@ -17,7 +14,7 @@ from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 
 #Setting transform functions
-def build_transforms(mean, std):
+def build_transforms(mean: torch.Tensor, std: torch.Tensor):
 
     train_transform = transforms.Compose([transforms.Resize(256), 
                         transforms.CenterCrop(224), 
@@ -33,7 +30,7 @@ def build_transforms(mean, std):
 
 
 #Get dataloader
-def get_dataloader(cfg):
+def get_dataloader(cfg: dict) -> dict[DataLoader]:
     #Defining parameters using yaml config
     mean = cfg["data"]["mean"]
     std = cfg["data"]['std']

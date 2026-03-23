@@ -1,3 +1,11 @@
+"""
+TODO add more models
+TODO doc
+
+
+"""
+
+
 #Import ResNet18 model
 from torchvision.models import resnet18, ResNet18_Weights 
 from torchvision import models
