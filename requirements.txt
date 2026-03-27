@@ -1,0 +1,9 @@
+matplotlib==3.10.8
+numpy==2.3.5
+PyYAML==6.0.3
+scikit-learn==1.8.0
+split-folders==0.6.1
+# Install the current CUDA variant from https://pytorch.org/get-started/locally/
+torch==2.10.0+cu130
+torchvision==0.25.0+cu130
+tqdm==4.67.3
