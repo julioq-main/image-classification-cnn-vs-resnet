@@ -17,6 +17,6 @@ def get_model(cfg):
             model = MyResNet18(num_classes)
         #TODO add other models
         case _:
-            raise ValueError("Unknown model")
+            raise ValueError(f"Unknown model: '{name}'")
         
     return model

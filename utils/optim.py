@@ -1,5 +1,4 @@
 """
-TODO try dict instead  of match pattern? (Search which is better)
 TODO doc
 
 """
@@ -8,15 +7,25 @@ import torch.optim as optim
 
 def get_optim(cfg, model):    
     
+    name = cfg.get("name", "No name added")
     # --- Optimizer ---
-    match cfg["name"]:
+    match name:
         case "sgd":
-            optimizer = optim.SGD(model.parameters(), lr=cfg["lr"], momentum=cfg["momentum"])
+            lr = cfg.get("lr", 0.001)
+            momentum = cfg.get("momentum", 0.9)
+            weight_decay=cfg.get("weight_decay", 0.0)
+
+            optimizer = optim.SGD(model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
         case "adam":
-            optimizer = optim.Adam(model.parameters(), lr=cfg["lr"], weight_decay=cfg["weight_decay"])
+            lr = cfg.get("lr", 0.001)
+            weight_decay=cfg.get("weight_decay", 0.0)
+
+            optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
         case "adamw":
-            optimizer = optim.AdamW(model.parameters(), lr=cfg["lr"])
+            lr = cfg.get("lr", 0.001)
+            weight_decay=cfg.get("weight_decay", 0.01)
+            optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
         case _:
-            raise ValueError("Unknown optimizer")
+            raise ValueError(f"Unknown optimizer: '{name}'")
         
     return optimizer

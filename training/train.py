@@ -83,7 +83,7 @@ from models import get_model
 from utils.data import get_dataloader
 from utils.optim import get_optim
 from utils.metrics import compute_metrics
-from engine.engine import train_one_epoch, eval_one_epoch
+from engine import train_one_epoch, eval_one_epoch
 
 
 def run_training(cfg):
@@ -99,10 +99,10 @@ def run_training(cfg):
     optimizer = get_optim(cfg["training"]["optimizer"], model)
 
     # --- DataLoaders
-    loaders = get_dataloader(cfg)
+    loaders = get_dataloader(cfg["data"])
 
     # --- Criterion ---
-    criterion = nn.CrossEntropyLoss().to(device)   #Always same criterion as it is a classification task
+    criterion = nn.CrossEntropyLoss()   #Always same criterion as it is a classification task
 
     # --- History ---
     history = {
@@ -146,7 +146,7 @@ def run_training(cfg):
         history["val_accuracy"].append(val_metrics["accuracy"])
 
         if cfg["eval"].get("advanced_metrics", False):
-            advanced_metrics = compute_metrics(val_metrics["targets"],val_metrics["preds"])
+            advanced_metrics = compute_metrics(val_metrics["targets"], val_metrics["preds"])
             print("   --- Advanced metrics --- ")
             print(f"   Precision: {advanced_metrics["precision"]};  Recall: {advanced_metrics["recall"]};  F1 Score: {advanced_metrics["f1_score"]}\n")
 

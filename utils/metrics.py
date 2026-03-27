@@ -63,7 +63,7 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
 
     # Compute metrics
     accuracy = (preds==targets).sum()/len(targets)
-    precision = precision_score(targets,preds,average = "macro", zero_division = 0)
+    precision = precision_score(targets, preds,average="macro", zero_division=0)
     recall = recall_score(targets, preds, average="macro", zero_division=0)
     f1 = f1_score(targets, preds, average="macro", zero_division=0)
     conf_matrix = confusion_matrix(targets, preds)
@@ -81,7 +81,7 @@ def main():
     preds = torch.tensor([0,1,2])
     targets = torch.tensor([0,2,2])
 
-    metrics = compute_metrics(targets,preds)
+    metrics = compute_metrics(targets, preds)
     
     for k,v in metrics.items():
         print(f"{k}: {v}")

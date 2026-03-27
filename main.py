@@ -1,12 +1,9 @@
 """
-TODO Plot loss and accuracy during training, maybe add a bool parameter to activate the plotting function
-TODO improve everything
+TODO save model and history (csv for normal metrics and json for advanced metrics)
+TODO add visualisation if enabled in yaml config, maybe realtime?
 TODO doc
-TODO set seed (utils/seed.py)
 
 """
-
-
 
 import yaml
 from training.train import run_training
@@ -19,6 +16,7 @@ def main():
 
     seed = config.get("seed", None)
     if seed is not None:
+        print("Seed set")
         set_seed(seed)
 
     model, history = run_training(config)
