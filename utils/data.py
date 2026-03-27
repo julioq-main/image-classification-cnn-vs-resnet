@@ -1,11 +1,7 @@
 """
+utils/data.py
+
 API to get dataloader
-TODO Dataset sanity check(explore that)
-TODO debug dataset (100 samples)?
-TODO some data analysis? (PROBABLY IN ANOTHER SCRIPT data/scripts/analysis.py?)
-TODO doc
-TODO make augmentation possible through config
-TODO add RandomResizedCrop(224)
 """
 
 

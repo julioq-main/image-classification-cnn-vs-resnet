@@ -1,6 +1,4 @@
 """
-TODO add other models
-TODO doc
 """
 
 

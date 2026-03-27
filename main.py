@@ -1,7 +1,4 @@
 """
-TODO save model and history (csv for normal metrics and json for advanced metrics)
-TODO add visualisation if enabled in yaml config, maybe realtime?
-TODO doc
 
 """
 

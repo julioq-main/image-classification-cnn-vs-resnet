@@ -1,7 +1,5 @@
 """
-TODO add more models
-TODO doc
-
+models/architectures.py
 
 """
 
