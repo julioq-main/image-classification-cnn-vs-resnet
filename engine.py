@@ -57,7 +57,9 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
         #Getting images, targets, the target prediction and the loss
         images = images.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
-        
+
+        optimizer.zero_grad()
+
         # Forward Pass
         preds = model(images)
         loss = criterion(preds,targets)
@@ -65,7 +67,6 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
         # Backward Pass
         loss.backward()
         optimizer.step()
-        optimizer.zero_grad()
 
         # Accumulate Batch Metrics
         batch_size = images.size(0)  # Handles last batch if smaller
@@ -121,16 +122,17 @@ def eval_one_epoch(dataloader: torch.utils.data.DataLoader,
         
         # Forward Pass
         preds = model(images)
+        pred_args = preds.argmax(1)
         loss = criterion(preds, targets)
 
         # Store predictions and targets for metrics computation
-        total_preds.append(preds.argmax(1))
-        total_targets.append(targets)
+        total_preds.append(pred_args.cpu())
+        total_targets.append(targets.cpu())
 
         # Accumulate batch metrics
         batch_size = images.size(0)  # Handles last batch if smaller
         total_loss += loss.item()*batch_size  # Take into account batch size
-        total_correct += (preds.argmax(1)==targets).sum().item()  #Comparing real target and the prediction
+        total_correct += (pred_args==targets).sum().item()  #Comparing real target and the prediction
 
     avg_loss = total_loss/size
     accuracy = total_correct/size

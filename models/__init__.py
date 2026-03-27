@@ -4,7 +4,7 @@ TODO doc
 """
 
 
-from models.models import MyResNet18
+from models.architectures import MyResNet18
 
 def get_model(cfg):
     
