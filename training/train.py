@@ -2,7 +2,7 @@
 
 
 """
-
+import logging
 import torch
 import torch.nn as nn
 from copy import deepcopy
@@ -13,37 +13,38 @@ from utils.optim import get_optim
 from utils.metrics import compute_metrics
 from engine import train_one_epoch, eval_one_epoch
 
+logger = logging.getLogger(__name__)
 
 def run_training(cfg):
+
+    logger.info("|--------- STARTING TRAINING ---------|")
     
-    # --- Epochs & Device ---
     epochs = cfg["training"]["epochs"]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    # --- Model ---
     model=get_model(cfg["model"]).to(device)
-
-    # --- Optimizer ---
     optimizer = get_optim(cfg["training"]["optimizer"], model)
-
-    # --- DataLoaders
     loaders = get_dataloader(cfg["data"])
-
-    # --- Criterion ---
     criterion = nn.CrossEntropyLoss()   #Always same criterion as it is a classification task
 
-    # --- History ---
+    use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
+
     history = {
         "train_loss": [],
         "train_accuracy": [],
         "val_loss": [],
         "val_accuracy": [],
-        "precision":[],
-        "recall": [],
-        "f1_score": [],
-        "confusion_matrix": []
+        
     }
 
+    if use_advanced_metrics:
+        logger.debug("Advanced Metrics are active")
+        history.update({
+            "precision":[],
+            "recall": [],
+            "f1_score": [],
+            "confusion_matrix": []
+            })
+        
     # Early stopping variables
     patience = cfg["training"].get("patience", None)
     patience_counter = 0
@@ -51,21 +52,15 @@ def run_training(cfg):
     best_val_loss = float("inf")
     loss_goal = cfg["training"].get("loss_goal",None)
 
-    # --- Training ---
-    print("|=====================================|")
-    print("|--------- STARTING TRAINING ---------|")
-    print("|=====================================|\n")
 
     for epoch in range(epochs):
-        print(f"=========== Epoch {epoch+1} ===========")
+        logger.info(f"=========== Epoch {epoch+1} ===========")
         
         train_metrics = train_one_epoch(loaders["train_loader"], model, criterion, optimizer, device)
-        print(f"   --- Training metrics ---")
-        print(f"   Average loss: {train_metrics["loss"]};  Accuracy: {train_metrics["accuracy"]}\n")
+        logger.info(f"Training metrics:  Average loss={train_metrics["loss"]};  Accuracy={train_metrics["accuracy"]}")
         
         val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
-        print(f"   --- Validating metrics ---")
-        print(f"   Average loss: {val_metrics["loss"]};  Accuracy: {val_metrics["accuracy"]}\n")
+        logger.info(f"Validation metrics:  Average loss: {val_metrics["loss"]};  Accuracy: {val_metrics["accuracy"]}\n")
 
         # --- Store metrics ---
         history["train_loss"].append(train_metrics["loss"])
@@ -73,10 +68,11 @@ def run_training(cfg):
         history["val_loss"].append(val_metrics["loss"])
         history["val_accuracy"].append(val_metrics["accuracy"])
 
-        if cfg["eval"].get("advanced_metrics", False):
+        if use_advanced_metrics:
+            
             advanced_metrics = compute_metrics(val_metrics["targets"], val_metrics["preds"])
-            print("   --- Advanced metrics --- ")
-            print(f"   Precision: {advanced_metrics["precision"]};  Recall: {advanced_metrics["recall"]};  F1 Score: {advanced_metrics["f1_score"]}\n")
+
+            logger.info(f"Advanced metrics enabled:  Precision: {advanced_metrics["precision"]};  Recall: {advanced_metrics["recall"]};  F1 Score: {advanced_metrics["f1_score"]}")
 
             history["precision"].append(advanced_metrics["precision"])
             history["recall"].append(advanced_metrics["recall"])
@@ -93,17 +89,15 @@ def run_training(cfg):
 
         # Conditional stops
         if loss_goal is not None and val_metrics["loss"] < loss_goal:    
-            print("Loss goal has been reached")
+            logger.info("Loss goal has been reached")
             break
         
         if patience is not None and patience_counter >= patience:
-            print("Training has plateaued")
+            logger.info("Training has plateaued")
             break
 
     model.load_state_dict(best_model)
     
-    print("|======================================|")
-    print("|--------- TRAINING COMPLETED ---------|")
-    print("|======================================|")
-
+    logger.info("|--------- TRAINING COMPLETED ---------|")
+    
     return model, history

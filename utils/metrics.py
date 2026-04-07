@@ -13,9 +13,12 @@ Metrics included:
 Metrics are computed for each epoch
 """
 
+import logging
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
+
+logger = logging.getLogger(__name__)
 
 def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     """
@@ -59,6 +62,7 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     
     # Shape check
     if targets.shape != preds.shape:
+        logger.error(f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}")
         raise ValueError(f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}")
 
     # Compute metrics
@@ -73,7 +77,8 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
         "precision": precision,
         "recall": recall,
         "f1_score": f1,
-        "confusion_matrix": conf_matrix}
+        "confusion_matrix": conf_matrix
+        }
 
 
 def main():

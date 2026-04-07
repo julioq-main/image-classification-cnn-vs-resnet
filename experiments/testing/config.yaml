@@ -1,3 +1,8 @@
+seed: 1234
+log_file: "experiments/testing/testing.log"
+log_level: "DEBUG"
+save_dir: "experiments/testing"
+
 data:
  train_dir: "data/processed/train"
  test_dir: "data/processed/test"
@@ -7,7 +12,9 @@ data:
  batch_size: 32
  num_workers: 4
 
-seed: 1234
+model: 
+ name: "resnet"
+ num_classes: 25
 
 training:
  optimizer:
@@ -22,6 +29,3 @@ training:
 eval:
  advanced_metrics: true
 
-model: 
- name: "resnet"
- num_classes: 25
