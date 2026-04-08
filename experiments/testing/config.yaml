@@ -22,7 +22,7 @@ training:
   lr: 0.001
   momentum: 0.9
  
- epochs: 10
+ epochs: 2
  loss_goal: 0.1
  patience: 5
 
