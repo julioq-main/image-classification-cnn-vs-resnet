@@ -19,11 +19,13 @@ import torch
 from tqdm import tqdm
 
 #train loop
-def train_one_epoch(dataloader: torch.utils.data.DataLoader, 
-                    model: torch.nn.Module,
-                    criterion: torch.nn.Module,
-                    optimizer: torch.optim.Optimizer,
-                    device: torch.device) -> dict:
+def train_one_epoch(
+    dataloader: torch.utils.data.DataLoader, 
+    model: torch.nn.Module,
+    criterion: torch.nn.Module,
+    optimizer: torch.optim.Optimizer,
+    device: torch.device
+) -> dict:
     """
     Performs one epoch of training.
 
@@ -79,10 +81,12 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
     return {"loss":avg_loss, "accuracy":accuracy}
 
 @torch.no_grad()  #Don't compute gradients
-def eval_one_epoch(dataloader: torch.utils.data.DataLoader,
-                   model: torch.nn.Module,
-                   criterion: torch.nn.Module,
-                   device: torch.device) -> dict:
+def eval_one_epoch(
+    dataloader: torch.utils.data.DataLoader,
+    model: torch.nn.Module,
+    criterion: torch.nn.Module,
+    device: torch.device
+) -> dict:
     """
     Performs one epoch of evaluation (validation or testing).
 

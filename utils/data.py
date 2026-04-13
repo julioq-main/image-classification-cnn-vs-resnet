@@ -13,16 +13,19 @@ from torch.utils.data import DataLoader
 #Setting transform functions
 def build_transforms(mean: list, std: list):
 
-    train_transform = transforms.Compose([transforms.Resize(256), 
-                        transforms.CenterCrop(224), 
-                        transforms.RandomHorizontalFlip(0.5), 
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean=mean, std=std)])
+    train_transform = transforms.Compose([
+        transforms.RandomResizedCrop(224), 
+        transforms.RandomHorizontalFlip(0.5), 
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+        ])
 
-    test_val_transform = transforms.Compose([transforms.Resize(256),
-                        transforms.CenterCrop(224),
-                        transforms.ToTensor(),
-                        transforms.Normalize(mean=mean, std=std)])
+    test_val_transform = transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=mean, std=std)
+        ])
     return train_transform, test_val_transform
 
 

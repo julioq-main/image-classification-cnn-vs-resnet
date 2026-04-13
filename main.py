@@ -13,21 +13,23 @@ logger = logging.getLogger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Parser training and benchmarking models",)
-    parser.add_argument("--config",
-                        "-c",
-                        type=str,
-                        default="experiments/testing/config.yaml",
-                        required=False,
-                        help="Path to the YAML config file (e.g. config.yaml)"
-                        )
+    parser.add_argument(
+        "--config",
+        "-c",
+        type=str,
+        default="experiments/testing/config.yaml",
+        required=False,
+        help="Path to the YAML config file (e.g. config.yaml)"
+        )
     
     #Add more arguments and implement logic
-    parser.add_argument("--log-level",
-                        "-l", type=str,
-                        default=None,
-                        required=False,
-                        help="Level of the logger"
-                        )
+    parser.add_argument(
+        "--log-level",
+        "-l", type=str,
+        default=None,
+        required=False,
+        help="Level of the logger"
+        )
     
     parser.add_argument("--log-file", type=str, default=None, help="Path to the logger file")
     parser.add_argument("--save-dir", "-sd", type=str, required=False, help="Path to the directory to save")
@@ -49,7 +51,6 @@ def main():
 
     seed = config.get("seed", None)
     if seed is not None:
-        logger.info(f"Seed set to {seed}")
         set_seed(seed)
     else:
         logger.info("Seed not set")

@@ -78,7 +78,7 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
         "recall": recall,
         "f1_score": f1,
         "confusion_matrix": conf_matrix
-        }
+    }
 
 
 def main():
