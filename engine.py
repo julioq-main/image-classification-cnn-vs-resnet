@@ -1,76 +1,57 @@
 """
-engine.py
-
-Provides training and evaluation loops for classification models in PyTorch.
-
-Functions:
-- train_one_epoch: Runs one epoch of training and computes loss and accuracy.
-- eval_one_epoch: Evaluates the model for one epoch, returning loss, accuracy, labels and predictions.
-
-Notes:
-- Loss is averaged across all samples.
-- Accuracy is computed per sample.
-- For evaluation, predictions and targets are concatenated across batches to allow computation of
-  additional metrics (precision, recall, F1, confusion matrix).
-- tqdm is used for progress visualization.
+Training and evaluation loops for classification models in PyTorch.
 """
-
 import torch
 from tqdm import tqdm
 
+
 #train loop
 def train_one_epoch(
-    dataloader: torch.utils.data.DataLoader, 
-    model: torch.nn.Module,
-    criterion: torch.nn.Module,
-    optimizer: torch.optim.Optimizer,
-    device: torch.device
-) -> dict:
+        dataloader: torch.utils.data.DataLoader, 
+        model: torch.nn.Module,
+        criterion: torch.nn.Module,
+        optimizer: torch.optim.Optimizer,
+        device: torch.device
+    ) -> dict:
     """
-    Performs one epoch of training.
+    Run one epoch of training and return loss and accuracy.
 
-    Args:
-        dataloader (torch.utils.data.DataLoader): DataLoader for training data.
-        model (torch.nn.Module): The model to train.
-        criterion (torch.nn.Module): Loss function.
-        optimizer (torch.optim.Optimizer): Optimizer for model parameters.
-        device (torch.device): Device to perform computations on (CPU/GPU).
+    Parameters
+    ----------
+    dataloader : torch.utils.data.DataLoader
+        DataLoader for the training set.
+    model : torch.nn.Module
+        Model to train.
+    criterion : torch.nn.Module
+        Loss function.
+    optimizer : torch.optim.Optimizer
+        Optimizer for model parameters.
+    device : torch.device
+        Device to perform computations on.
 
-    Returns:
-        dict: {
-            "loss": float,       # Average loss across all samples
-            "accuracy": float    # Accuracy across all samples
-        }
-
-    Behavior:
-        - Model is set to train mode.
-        - Gradients are computed and backpropagated for each batch.
-        - Loss and correct predictions are accumulated per batch.
-        - Handles varying batch sizes (e.g., last batch may be smaller).
+    Returns
+    -------
+    dict
+        ``loss`` (float): average loss across all samples.
+        ``accuracy`` (float): accuracy across all samples.
     """
-
-    model.train()  # Enable training mode
+    model.train()
 
     total_loss, total_correct = 0.0,0
-    size = len(dataloader.dataset)  # Total number of samples
+    size = len(dataloader.dataset)
     
-    #Iterating for each batch
     for (images, targets) in tqdm(dataloader, desc="Training", leave=False):
-        #Getting images, targets, the target prediction and the loss
         images = images.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
 
         optimizer.zero_grad()
 
-        # Forward Pass
         preds = model(images)
         loss = criterion(preds,targets)
 
-        # Backward Pass
         loss.backward()
         optimizer.step()
 
-        # Accumulate Batch Metrics
         batch_size = images.size(0)  # Handles last batch if smaller
         total_loss += loss.item()*batch_size  # Take into account batch size
         total_correct += (preds.argmax(1)==targets).sum().item()  # Comparing real target and prediction
@@ -78,71 +59,80 @@ def train_one_epoch(
     avg_loss = total_loss/size
     accuracy = total_correct/size
 
-    return {"loss":avg_loss, "accuracy":accuracy}
+    return {
+        "loss":avg_loss,
+        "accuracy":accuracy
+    }
 
-@torch.no_grad()  #Don't compute gradients
+@torch.no_grad()
 def eval_one_epoch(
-    dataloader: torch.utils.data.DataLoader,
-    model: torch.nn.Module,
-    criterion: torch.nn.Module,
-    device: torch.device
-) -> dict:
+        dataloader: torch.utils.data.DataLoader,
+        model: torch.nn.Module,
+        criterion: torch.nn.Module,
+        device: torch.device
+    ) -> dict:
     """
-    Performs one epoch of evaluation (validation or testing).
+    Run one epoch of evaluation and return loss, accuracy, and raw predictions.
 
-    Args:
-        dataloader (torch.utils.data.DataLoader): DataLoader for evaluation data.
-        model (torch.nn.Module): The model to evaluate.
-        criterion (torch.nn.Module): Loss function.
-        device (torch.device): Device to perform computations on (CPU/GPU).
+    Parameters
+    ----------
+    dataloader : torch.utils.data.DataLoader
+        DataLoader for the validation or test set.
+    model : torch.nn.Module
+        Model to evaluate.
+    criterion : torch.nn.Module
+        Loss function.
+    device : torch.device
+        Device to perform computations on.
 
-    Returns:
-        dict: {
-            "loss": float,           # Average loss across all samples
-            "accuracy": float,       # Accuracy across all samples
-            "targets": torch.Tensor, # Concatenated true labels for all batches
-            "preds": torch.Tensor    # Concatenated predicted labels for all batches
-        }
+    Returns
+    -------
+    dict
+        ``loss`` (float): average loss across all samples.
+        ``accuracy`` (float): accuracy across all samples.
+        ``targets`` (torch.Tensor): concatenated true labels for all batches.
+        ``preds`` (torch.Tensor): concatenated predicted class indices for all batches.
 
-    Behavior:
-        - Model is set to evaluation mode.
-        - No gradients are computed (saves memory and computation).
-        - Predictions and targets are stored per batch and concatenated to allow computation
-          of additional metrics like precision, recall, F1-score, and confusion matrix.
-        - Handles varying batch sizes.
-    """
-    
-    model.eval()  # Enable evaluation mode
+    Notes
+    -----
+    Decorated with ``@torch.no_grad()``, so no gradients are computed or
+    stored during the forward pass.
+
+    ``targets`` and ``preds`` are moved to CPU and concatenated across all
+    batches, allowing computation of additional metrics such as precision,
+    recall, F1-score, and confusion matrix after the call.
+    """    
+    model.eval()
 
     size = len(dataloader.dataset)
     total_loss, total_correct = 0.0, 0
-    total_preds, total_targets = [], []
+    all_preds, all_targets = [], []
     
     #Iterating for each batch
     for images, targets in tqdm(dataloader,desc="Evaluating", leave=False):
-        #Getting images, targets, target prediction (in GPU if possible)
         images = images.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
         
-        # Forward Pass
         preds = model(images)
-        pred_args = preds.argmax(1)
+        pred_classes = preds.argmax(1)
         loss = criterion(preds, targets)
 
-        # Store predictions and targets for metrics computation
-        total_preds.append(pred_args.cpu())
-        total_targets.append(targets.cpu())
+        all_preds.append(pred_classes.cpu())
+        all_targets.append(targets.cpu())
 
-        # Accumulate batch metrics
         batch_size = images.size(0)  # Handles last batch if smaller
         total_loss += loss.item()*batch_size  # Take into account batch size
-        total_correct += (pred_args==targets).sum().item()  #Comparing real target and the prediction
+        total_correct += (pred_classes==targets).sum().item()  #Comparing real target and the prediction
 
     avg_loss = total_loss/size
     accuracy = total_correct/size
     
-    # Concatenate all batches for global metrics
-    output_targets = torch.cat(total_targets)
-    output_preds = torch.cat(total_preds)
+    output_targets = torch.cat(all_targets)
+    output_preds = torch.cat(all_preds)
 
-    return {"loss":avg_loss, "accuracy":accuracy, "targets": output_targets, "preds": output_preds}
+    return {
+        "loss":avg_loss,
+        "accuracy":accuracy,
+        "targets": output_targets,
+        "preds": output_preds
+    }
