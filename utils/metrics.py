@@ -5,8 +5,8 @@ import logging
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
-
 logger = logging.getLogger(__name__)
+
 
 def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     """
@@ -55,7 +55,6 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     # Shape check
     if targets.shape != preds.shape:
         msg = f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}"
-        logger.error(msg)
         raise ValueError(msg)
 
     #Convert tensors to NumPy arrays for sklearn
