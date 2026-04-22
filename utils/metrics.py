@@ -1,18 +1,6 @@
 """
-utils/metrics.py
-
-Function to compute advanced metrics for classification tasks
-
-Metrics included:
- - Accuracy
- - Precision
- - Recall
- - F1 Score
- - Confusion Matrix
-
-Metrics are computed for each epoch
+Metrics computation for multiclass classification tasks.
 """
-
 import logging
 import torch
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
@@ -22,54 +10,62 @@ logger = logging.getLogger(__name__)
 
 def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     """
-    Computes all metrics
+    Compute accuracy, precision, recall, F1-score, and confusion matrix.
 
-    Args:
-        targets (torch.Tensor): The true labels for the epoch, shape (N,)
-        preds (torch.Tensor): The predictions for the epoch, shape (N,)
+    Parameters
+    ----------
+    targets : torch.Tensor
+        True class labels, shape ``(N,)``.
+    preds : torch.Tensor
+        Predicted class indices, shape ``(N,)``.
 
-    Returns:
-        dict: {
-            "accuracy": float,
-            "precision": float,
-            "recall": float,
-            "f1": float
-            "confusion_matrix": np.ndarray
-        }
-    
-    Raises:
-        ValueError: Predictions and Targets shapes do not match
+    Returns
+    -------
+    dict
+        ``accuracy`` (float): fraction of correctly classified samples.
+        ``precision`` (float): macro-averaged precision across all classes.
+        ``recall`` (float): macro-averaged recall across all classes.
+        ``f1_score`` (float): macro-averaged F1-score across all classes.
+        ``confusion_matrix`` (np.ndarray): confusion matrix of shape ``(C, C)``,
+        where ``C`` is the number of classes.
 
-    Notes:
-        - Uses zero_division=0 to handle classes with no predictions.
-        - Macro average gives equal weight to each class.
+    Raises
+    ------
+    ValueError
+        If ``targets`` and ``preds`` have different shapes.
 
+    Notes
+    -----
+    Macro averaging gives equal weight to each class regardless of support.
+    Classes with no predicted samples contribute 0 to the average
+    (``zero_division=0``).
 
-    Example:
-        >>> preds = torch.tensor([0,1,2])
-        >>> targets = torch.tensor([0,2,2])
-        >>> compute_metrics(targets,preds)
-        {'accuracy': 0.6667, 'precision': 0.6667, 'recall': 0.5, 'f1_score': 0.5556, 
-         'confusion_matrix': array([[1, 0, 0],
-                                    [0, 0, 0],
-                                    [0, 1, 1]])}
+    All float metrics are rounded to 4 decimal places.
 
+    Examples
+    --------
+    >>> preds = torch.tensor([0, 1, 2])
+    >>> targets = torch.tensor([0, 2, 2])
+    >>> compute_metrics(targets, preds)
+    {'accuracy': 0.6667, 'precision': 0.6667, 'recall': 0.5, 'f1_score': 0.5556,
+     'confusion_matrix': array([[1, 0, 0],
+                                [0, 0, 0],
+                                [0, 1, 1]])}
     """
+    # Shape check
+    if targets.shape != preds.shape:
+        msg = f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}"
+        logger.error(msg)
+        raise ValueError(msg)
 
     #Convert tensors to NumPy arrays for sklearn
     targets = targets.cpu().numpy()
     preds = preds.cpu().numpy()
-    
-    # Shape check
-    if targets.shape != preds.shape:
-        logger.error(f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}")
-        raise ValueError(f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}")
 
-    # Compute metrics
-    accuracy = (preds==targets).sum()/len(targets)
-    precision = precision_score(targets, preds,average="macro", zero_division=0)
-    recall = recall_score(targets, preds, average="macro", zero_division=0)
-    f1 = f1_score(targets, preds, average="macro", zero_division=0)
+    accuracy = round(float((preds==targets).sum() / len(targets)), 4)
+    precision = round(float(precision_score(targets, preds, average="macro", zero_division=0)), 4)
+    recall = round(float(recall_score(targets, preds, average="macro", zero_division=0)), 4)
+    f1 = round(float(f1_score(targets, preds, average="macro", zero_division=0)), 4)
     conf_matrix = confusion_matrix(targets, preds)
     
     return {
