@@ -77,7 +77,7 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     }
 
 
-def main():
+def main() -> None:
     # Test compute_metrics
     preds = torch.tensor([0,1,2])
     targets = torch.tensor([0,2,2])
