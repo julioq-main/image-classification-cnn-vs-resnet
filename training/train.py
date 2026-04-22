@@ -4,10 +4,11 @@
 """
 import json
 import logging
-import torch
-import torch.nn as nn
 from pathlib import Path
 from copy import deepcopy
+
+import torch
+import torch.nn as nn
 
 from models import get_model
 from utils.data import get_dataloader
@@ -17,7 +18,8 @@ from engine import train_one_epoch, eval_one_epoch
 
 logger = logging.getLogger(__name__)
 
-def run_training(cfg):
+
+def run_training(cfg: dict):
     logger.info("Starting training")
     
     epochs = cfg["training"]["epochs"]
@@ -26,7 +28,8 @@ def run_training(cfg):
     
     model=get_model(cfg["model"]).to(device)
     optimizer = get_optim(cfg["training"]["optimizer"], model)
-    loaders = get_dataloader(cfg["data"])
+    seed = cfg.get("seed", None)
+    loaders = get_dataloader(cfg["data"], seed)
     criterion = nn.CrossEntropyLoss()   #Always same criterion as it is a classification task
 
     use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
@@ -76,7 +79,6 @@ def run_training(cfg):
         logger.info(f"Epoch [{epoch+1}/{epochs}]  "
             f"Train — loss: {train_metrics['loss']:.4f}  acc: {train_metrics['accuracy']:.4f}  |  "
             f"Val — loss: {val_metrics['loss']:.4f}  acc: {val_metrics['accuracy']:.4f}")
-
         
         if use_advanced_metrics:
             advanced_metrics = compute_metrics(val_metrics["targets"], val_metrics["preds"])
@@ -126,9 +128,9 @@ def run_training(cfg):
 
         history_path = save_dir / "history.json"
         with open(history_path, "w") as f:
-            json.dump(history, f, indent=2, default=lambda x: x.tolist() if hasattr(x, "tolist") else str(x))
+            json.dump(history, f, indent=1, default=lambda x: x.tolist())
 
-        logger.info(f"Final model and history saved to {final_path}")
+        logger.info(f"Final model and history saved to {checkpoint_dir}")
     else:
         model.load_state_dict(best_model)
     

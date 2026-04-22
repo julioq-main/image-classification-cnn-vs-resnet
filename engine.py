@@ -5,7 +5,6 @@ import torch
 from tqdm import tqdm
 
 
-#train loop
 def train_one_epoch(
         dataloader: torch.utils.data.DataLoader, 
         model: torch.nn.Module,

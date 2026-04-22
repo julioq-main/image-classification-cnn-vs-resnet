@@ -11,6 +11,16 @@ data:
  std: [0.2304, 0.2314, 0.2542]
  batch_size: 32
  num_workers: 4
+ image_size: 224
+ resize_size: 256
+ drop_last: true
+ augmentations:
+  - name: RandomResizeCrop
+    params:
+     size: 224
+  - name: RandomHorizontalFlip
+    params:
+     p: 0.5
 
 model: 
  name: "resnet"

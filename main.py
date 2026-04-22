@@ -5,11 +5,13 @@
 import yaml
 import argparse
 import logging
+
 from training.train import run_training
 from utils.seed import set_seed
 from utils.logger import set_logger
 
 logger = logging.getLogger(__name__)
+
 
 def parse_args():
     parser = argparse.ArgumentParser(prog="Parser training and benchmarking models",)
@@ -36,6 +38,7 @@ def parse_args():
     parser.add_argument("--training", "-t", type=bool, required=False, default=True)
     
     return parser.parse_args()
+
 
 def main():
     

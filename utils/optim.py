@@ -1,11 +1,12 @@
 """
-utils/optim.py
+Optimizers for training the Neural Networks.
 
 """
 
 import torch.optim as optim
 
-def get_optim(cfg, model):    
+
+def get_optim(cfg: dict, model):    
     
     name = cfg.get("name", "No name added")
     # --- Optimizer ---
