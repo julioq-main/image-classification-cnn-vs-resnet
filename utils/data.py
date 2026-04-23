@@ -89,6 +89,9 @@ def build_transforms(
                 )
             
             aug_list.append(AUGMENTATION_REGISTRY[name](**params))
+    else:
+        aug_list.append(transforms.Resize(resize_size))
+        aug_list.append(transforms.CenterCrop(image_size))
 
     train_transform = transforms.Compose([
         *aug_list,
