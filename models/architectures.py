@@ -10,11 +10,11 @@ import torch.nn as nn
 
 
 class MyResNet18(nn.Module):
-#Defining the model and tuning it to match our problem
+#Defining the model and tuning it to match our task
     def __init__(self, num_classes):
         super().__init__()
         self.model = resnet18(weights=ResNet18_Weights.DEFAULT)
-        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)  #Changing the last layer to output 25 classes not 1000 as the standard does
+        self.model.fc = nn.Linear(self.model.fc.in_features, num_classes)
 
     def forward(self, x):
         return self.model(x)

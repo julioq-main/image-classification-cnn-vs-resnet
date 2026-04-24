@@ -1,8 +1,7 @@
 """
 """
-
-
 from models.architectures import MyResNet18
+
 
 def get_model(cfg):
     
