@@ -2,12 +2,13 @@
 DataLoader construction for image classification with configurable augmentations.
 """
 import logging
+from functools import partial
 
 import torch
 from torchvision import transforms, datasets
 from torch.utils.data import DataLoader
 
-from utils.seed import get_worker_init_fn
+from utils.seed import worker_init_fn as _worker_init_fn
 
 # Maps config names to torchvision transform classes
 AUGMENTATION_REGISTRY = {
@@ -164,7 +165,7 @@ def get_dataloader(cfg: dict, seed: int | None) -> dict[str, DataLoader]:
     val_dataset = datasets.ImageFolder(root=cfg["val_dir"], transform=test_val_transform)
 
     pin_memory = torch.cuda.is_available()
-    worker_init_fn = get_worker_init_fn(seed)
+    worker_init_fn = (partial(_worker_init_fn, seed=seed) if seed is not None else None)
     generator = torch.Generator().manual_seed(seed) if seed is not None else None
     persistent_workers = num_workers >  0
 

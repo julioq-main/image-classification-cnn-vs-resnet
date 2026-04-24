@@ -5,7 +5,6 @@ PyTorch, CUDA, Python's built-in random module, and NumPy.
 import logging
 import os
 import random
-from typing import Callable
 
 import numpy as np
 import torch
@@ -57,39 +56,40 @@ def set_seed(seed: int) -> None:
     logger.info(f"Seed set to {seed}")
 
 
-def get_worker_init_fn(seed: int | None) -> Callable[[int], None]:
+def worker_init_fn(worker_id: int, seed: int | None) -> None:
     """
-    Return a ``worker_init_fn`` for reproducible multi-process data loading.
+    Initialize a DataLoader worker process with a deterministic random seed.
 
-    Each worker receives a unique seed derived as ``(seed + worker_id) % 2**32``,
-    ensuring different but reproducible RNG states per worker. NumPy and
-    Python's ``random`` module are seeded explicitly inside each worker, since
-    they do not inherit the main process RNG state.
+    This function is intended to be used as a PyTorch ``DataLoader.worker_init_fn``
+    in combination with ``functools.partial`` to bind a fixed base seed.
+
+    Each worker receives a unique seed derived as ``(seed + worker_id) % 2**32``
 
     Parameters
     ----------
+    worker_id : int
+        ID of the DataLoader worker process.
     seed : int
-        Base seed used to derive per-worker seeds.
-
-    Returns
-    -------
-    Callable[[int], None]
-        A function compatible with ``DataLoader``'s ``worker_init_fn`` parameter.
+        Base seed used to derive per-worker deterministic seeds. If None,
+        no seeding is applied.
 
     Examples
     --------
+    Recommended usage:
+
+    >>> from functools import partial
     >>> loader = DataLoader(
     ...     dataset,
-    ...     worker_init_fn=get_worker_init_fn(42),
+    ...     num_workers=4,
+    ...     worker_init_fn=partial(worker_init_fn, seed=42),
     ...     generator=torch.Generator().manual_seed(42),
-    ... )
+    ... )    
     """
     if seed is None:
-        return None
+        return
     
-    def worker_init_fn(worker_id: int) -> None:
-        worker_seed = (seed + worker_id) % 2**32
-        np.random.seed(worker_seed)
-        random.seed(worker_seed)
-
-    return worker_init_fn
+    worker_seed = (seed + worker_id) % 2**32
+    np.random.seed(worker_seed)
+    random.seed(worker_seed)
+    torch.manual_seed(worker_seed)
+    torch.cuda.manual_seed_all(worker_seed)
