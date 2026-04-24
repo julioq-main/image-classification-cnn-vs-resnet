@@ -108,7 +108,7 @@ def eval_one_epoch(
     all_preds, all_targets = [], []
     
     #Iterating for each batch
-    for images, targets in tqdm(dataloader,desc="Evaluating", leave=False):
+    for images, targets in tqdm(dataloader, desc="Evaluating", leave=False):
         images = images.to(device, non_blocking=True)
         targets = targets.to(device, non_blocking=True)
         
