@@ -1,6 +1,6 @@
-seed: 1234
+seed: 42
 log_file: "experiments/testing/testing.log"
-log_level: "DEBUG"
+log_level: "INFO"
 save_dir: "experiments/testing"
 
 data:
@@ -15,7 +15,7 @@ data:
  resize_size: 256
  drop_last: true
  augmentations:
-  - name: RandomResizeCrop
+  - name: RandomResizedCrop
     params:
      size: 224
   - name: RandomHorizontalFlip

@@ -9,6 +9,7 @@ import logging
 from training.train import run_training
 from utils.seed import set_seed
 from utils.logger import set_logger
+from utils.plotting import plot_accuracy, plot_loss
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,24 @@ def main():
     else:
         logger.info("Seed not set")
 
+    save_dir = args.save_dir or config.get("save_dir", None)
+
     model, history = run_training(config)
+
+    train_loss = history["train_loss"]
+    train_acc = history["train_accuracy"]
+    val_loss = history["val_loss"]
+    val_acc = history["val_accuracy"]
+
+    if save_dir is not None:
+        loss_save_path = save_dir + "/visualisation/loss"
+        acc_save_path = save_dir + "/visualisation/acc"
+    else:
+        loss_save_path = None
+        acc_save_path = None
+        
+    plot_loss(train_loss=train_loss, val_loss=val_loss, save_path=loss_save_path)
+    plot_accuracy(train_acc=train_acc, val_acc=val_acc, save_path=acc_save_path)
 
 
 if __name__ == "__main__":

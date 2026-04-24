@@ -7,7 +7,7 @@ from matplotlib.figure import Figure
 def plot_loss(
         train_loss: list[float],
         val_loss: list[float] | None = None,
-        fig_size: tuple[int] = (8, 5),
+        figsize: tuple[int] = (8, 5),
         save_path: str | None = None,
     ) -> None:
     """
@@ -27,7 +27,7 @@ def plot_loss(
     """    
     epochs = range(1, len(train_loss) + 1)
 
-    fig, ax = plt.subplots(fig_size=fig_size)
+    fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_loss, label="Train Loss")
     if val_loss is not None:
         ax.plot(epochs, val_loss, label="Val Loss")
@@ -43,7 +43,7 @@ def plot_loss(
 def plot_accuracy(
         train_acc: list[float],
         val_acc: list[float],
-        fig_size: tuple[int] = (8, 5),
+        figsize: tuple[int] = (8, 5),
         save_path: str | None = None,
     ) -> None:
     """
@@ -63,7 +63,7 @@ def plot_accuracy(
     """
     epochs = range(1, len(train_acc) + 1)
 
-    fig, ax = plt.subplots(fig_size=fig_size)
+    fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_acc, label="Train Accuracy")
     if val_acc is not None:
         ax.plot(epochs, val_acc, label="Val Accuracy")

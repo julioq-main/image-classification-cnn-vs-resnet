@@ -1,13 +1,14 @@
-2026-04-15 22:05:27 | INFO  | utils.seed : Seed set to 1234
-2026-04-15 22:05:27 | INFO  | training.train : Starting training
-2026-04-15 22:05:27 | INFO  | training.train : Using device: cuda
-2026-04-15 22:05:27 | INFO  | training.train : Saving to disk is active
-2026-04-15 22:05:27 | INFO  | training.train : Advanced metrics are active
-2026-04-15 22:05:48 | INFO  | training.train : Epoch [1/2]  Train — loss: 2.4120  acc: 0.3226  |  Val — loss: 1.6075  acc: 0.5118
-2026-04-15 22:05:48 | INFO  | training.train : Epoch [1/2]  Adv — precision: 0.4217  recall: 0.4058  f1: 0.3903
-2026-04-15 22:05:48 | INFO  | training.train : Checkpoint saved — val_loss improved to 1.6075
-2026-04-15 22:06:03 | INFO  | training.train : Epoch [2/2]  Train — loss: 1.5612  acc: 0.5467  |  Val — loss: 1.2396  acc: 0.6124
-2026-04-15 22:06:03 | INFO  | training.train : Epoch [2/2]  Adv — precision: 0.5237  recall: 0.5261  f1: 0.5097
-2026-04-15 22:06:03 | INFO  | training.train : Checkpoint saved — val_loss improved to 1.2396
-2026-04-15 22:06:03 | INFO  | training.train : Final model and history saved to experiments/testing/checkpoints
-2026-04-15 22:06:03 | INFO  | training.train : Training complete
+2026-04-24 21:14:54 | INFO  | utils.seed | Seed set to 42
+2026-04-24 21:14:54 | INFO  | training.train | Starting training
+2026-04-24 21:14:54 | INFO  | training.train | Using device: cuda
+2026-04-24 21:14:54 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
+2026-04-24 21:14:54 | INFO  | training.train | Saving to disk is active
+2026-04-24 21:14:54 | INFO  | training.train | Advanced metrics are active
+2026-04-24 21:15:15 | INFO  | training.train | Epoch [1/2]  Train — loss: 2.3599  acc: 0.3388  |  Val — loss: 1.6113  acc: 0.5161
+2026-04-24 21:15:15 | INFO  | training.train | Epoch [1/2]  Adv — precision: 0.4458  recall: 0.4185  f1: 0.4008
+2026-04-24 21:15:16 | INFO  | training.train | Checkpoint saved — val_loss improved to 1.6113
+2026-04-24 21:15:30 | INFO  | training.train | Epoch [2/2]  Train — loss: 1.5350  acc: 0.5519  |  Val — loss: 1.2135  acc: 0.6253
+2026-04-24 21:15:30 | INFO  | training.train | Epoch [2/2]  Adv — precision: 0.5423  recall: 0.5375  f1: 0.5273
+2026-04-24 21:15:30 | INFO  | training.train | Checkpoint saved — val_loss improved to 1.2135
+2026-04-24 21:15:30 | INFO  | training.train | Final model and history saved to experiments/testing/checkpoints
+2026-04-24 21:15:30 | INFO  | training.train | Training complete
