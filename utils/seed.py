@@ -34,7 +34,7 @@ def set_seed(seed: int) -> None:
 
     Does not handle seeds for ``DataLoader`` worker processes. For full
     reproducibility with multiple workers, pass a ``worker_init_fn`` to
-    ``DataLoader``. See ``get_worker_init_fn`` for a compatible helper.
+    ``DataLoader``. See ``worker_init_fn``.
 
     Examples
     --------
@@ -72,7 +72,16 @@ def worker_init_fn(worker_id: int, seed: int | None) -> None:
     seed : int
         Base seed used to derive per-worker deterministic seeds. If None,
         no seeding is applied.
+    
+    Notes
+    -----
+    This function must be defined at module top-level (not nested) to remain
+    picklable under multiprocessing start methods such as ``forkserver`` or
+    ``spawn`` (required in Python 3.14+ on many systems).
 
+    It should NOT be wrapped in a closure or factory function, as that would
+    break pickling for DataLoader worker processes.
+        
     Examples
     --------
     Recommended usage:
@@ -86,7 +95,7 @@ def worker_init_fn(worker_id: int, seed: int | None) -> None:
     ... )    
     """
     if seed is None:
-        return
+        return None
     
     worker_seed = (seed + worker_id) % 2**32
     np.random.seed(worker_seed)
