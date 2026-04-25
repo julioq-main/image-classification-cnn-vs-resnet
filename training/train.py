@@ -166,7 +166,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             "confusion_matrix": []
         })
         
-    for epoch in range(epochs):
+    for epoch in range(start_epoch, epochs):
         model.train()
         train_metrics = train_one_epoch(loaders["train_loader"], model, criterion, optimizer, device)
         model.eval()
