@@ -9,7 +9,7 @@ from pathlib import Path
 _VALID_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 
 
-def set_logger(log_level: str, log_file: str = None) -> None:
+def set_logger(log_level: str, log_file: str | None = None) -> None:
     """
     Configure the root logger with a console handler and an optional file handler.
 
