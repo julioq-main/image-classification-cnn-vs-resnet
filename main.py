@@ -23,20 +23,27 @@ def parse_args():
         default="experiments/testing/config.yaml",
         required=False,
         help="Path to the YAML config file (e.g. config.yaml)"
-        )
+    )
     
-    #Add more arguments and implement logic
     parser.add_argument(
         "--log-level",
-        "-l", type=str,
+        "-l",
+        type=str,
         default=None,
         required=False,
         help="Level of the logger"
-        )
+    )
     
+    parser.add_argument(
+        "--checkpoint",
+        "-ckpt",
+        type=str,
+        default=None,
+        required=False,
+        help="Path to a checkpoint file to resume training from"
+    )
+
     parser.add_argument("--log-file", type=str, default=None, help="Path to the logger file")
-    parser.add_argument("--save-dir", "-sd", type=str, required=False, help="Path to the directory to save")
-    parser.add_argument("--training", "-t", type=bool, required=False, default=True)
     
     return parser.parse_args()
 

@@ -1,6 +1,9 @@
 """
+Training pipeline for image classification models.
 
-
+This module exposes a single entry point, `run_training`, which takes a
+configuration dictionary and executes a full training loop with optional
+checkpointing, early stopping, and advanced evaluation metrics.
 """
 import json
 import logging
@@ -19,7 +22,93 @@ from engine import train_one_epoch, eval_one_epoch
 logger = logging.getLogger(__name__)
 
 
-def run_training(cfg: dict):
+def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[nn.Module, dict]:
+    """
+    Execute the full training loop for an image classification model.
+
+    Trains a model for a fixed number of epochs with optional early stopping,
+    loss-goal termination, and best-model checkpointing. If a save directory
+    is provided, the best checkpoint and training history are persisted to
+    disk; otherwise the best model weights are kept in memory.
+
+    Parameters
+    ----------
+    cfg : dict
+        Configuration dictionary. Expected top-level keys:
+
+        seed : int, optional
+            Global random seed passed to the dataloader.
+        save_dir : str or path-like, optional
+            Root directory for checkpoints and history. If omitted, the best
+            model state is kept in memory and no files are written.
+        model : dict
+            Passed directly to `get_model`. Must contain at least ``name``
+            and ``num_classes``.
+        data : dict
+            Passed directly to `get_dataloader`. Must contain dataset paths,
+            normalization stats, and loader settings.
+        training : dict
+            optimizer : dict
+                Passed to `get_optim`. Must contain ``name`` and ``lr``.
+            epochs : int
+                Maximum number of training epochs.
+            patience : int, optional
+                Early stopping patience. Training stops when validation loss
+                has not improved for this many consecutive epochs.
+            loss_goal : float, optional
+                Training stops immediately when validation loss drops below
+                this threshold.
+        eval : dict
+            advanced_metrics : bool, optional
+                If ``True``, per-epoch precision, recall, F1, and confusion
+                matrix are computed and stored in the returned history.
+                Defaults to ``False``.
+    checkpoint_path : str or path-like, optional
+        Path to a checkpoint file to resume training from. If provided, the
+        model weights, optimizer state, best validation loss, and starting
+        epoch are restored from the checkpoint before training begins.
+        If ``None``, training starts from scratch.
+                
+    Returns
+    -------
+    model : torch.nn.Module
+        The model loaded with the best weights observed during training
+        (lowest validation loss).
+    history : dict
+        Training history with the following keys, each being a list of
+        per-epoch values:
+
+        - ``train_loss`` : list of float
+        - ``train_accuracy`` : list of float
+        - ``val_loss`` : list of float
+        - ``val_accuracy`` : list of float
+
+        When ``advanced_metrics`` is enabled, the following keys are also
+        present:
+
+        - ``precision`` : list of float
+        - ``recall`` : list of float
+        - ``f1_score`` : list of float
+        - ``confusion_matrix`` : list of list of int — one matrix per epoch.
+
+    Notes
+    -----
+    The loss criterion is fixed to `torch.nn.CrossEntropyLoss` as this
+    pipeline is designed exclusively for multi-class classification tasks.
+
+    When ``save_dir`` is provided, the best checkpoint is saved to
+    ``<save_dir>/checkpoints/checkpoint.pth`` and the final model weights to
+    ``<save_dir>/checkpoints/final_model.pth``. Training history is written
+    to ``<save_dir>/history.json``. Non-serializable values (e.g. tensors)
+    are converted via ``.tolist()`` automatically.
+
+    Examples
+    --------
+    >>> with open("config.yaml") as f:
+    ...     cfg = yaml.safe_load(f)
+    >>> model, history = run_training(cfg)
+    >>> print(history["val_loss"])
+    """
     logger.info("Starting training")
     
     epochs = cfg["training"]["epochs"]
@@ -30,31 +119,43 @@ def run_training(cfg: dict):
     optimizer = get_optim(cfg["training"]["optimizer"], model)
     seed = cfg.get("seed", None)
     loaders = get_dataloader(cfg["data"], seed)
-    criterion = nn.CrossEntropyLoss()   #Always same criterion as it is a classification task
+    criterion = nn.CrossEntropyLoss()
 
     use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
     patience = cfg["training"].get("patience", None)
     patience_counter = 0
     loss_goal = cfg["training"].get("loss_goal", None)
     best_val_loss = float("inf")
+    best_model = None  # Holds in-memory best weights when save_dir is None
+
+    #Resume from checkpoint if provided
+    if checkpoint_path is not None:
+        checkpoint = torch.load(save_checkpoint_path, weights_only=True, map_location=device)
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint["epoch"]
+        best_val_loss = checkpoint["val_loss"]
+        logger.info(f"Resuming from checkpoint at epoch {start_epoch}, val_loss {best_val_loss:.4f}")
+    else:
+        start_epoch = 0
 
     save_dir = cfg.get("save_dir", None)
     if save_dir is not None:
         logger.info("Saving to disk is active")
         save_dir = Path(save_dir)
-        checkpoint_dir = save_dir / "checkpoints"
-        checkpoint_dir.mkdir(parents=True, exist_ok=True)
-        checkpoint_path = checkpoint_dir / "checkpoint.pth"
+        save_checkpoint_dir = save_dir / "checkpoints"
+        save_checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        save_checkpoint_path = save_checkpoint_dir / "checkpoint.pth"
     else:
         best_model = deepcopy(model.state_dict())
         logger.info("Saving to disk is not active")
-        
+    
     history = {
         "train_loss": [],
         "train_accuracy": [],
         "val_loss": [],
         "val_accuracy": [],
-        }
+    }
 
     if use_advanced_metrics:
         logger.info("Advanced metrics are active")
@@ -76,9 +177,11 @@ def run_training(cfg: dict):
         history["val_loss"].append(val_metrics["loss"])
         history["val_accuracy"].append(val_metrics["accuracy"])
 
-        logger.info(f"Epoch [{epoch+1}/{epochs}]  "
+        logger.info(
+            f"Epoch [{epoch+1}/{epochs}]  "
             f"Train — loss: {train_metrics['loss']:.4f}  acc: {train_metrics['accuracy']:.4f}  |  "
-            f"Val — loss: {val_metrics['loss']:.4f}  acc: {val_metrics['accuracy']:.4f}")
+            f"Val — loss: {val_metrics['loss']:.4f}  acc: {val_metrics['accuracy']:.4f}"
+        )
         
         if use_advanced_metrics:
             advanced_metrics = compute_metrics(val_metrics["targets"], val_metrics["preds"])
@@ -88,8 +191,12 @@ def run_training(cfg: dict):
             history["f1_score"].append(advanced_metrics["f1_score"])
             history["confusion_matrix"].append(advanced_metrics["confusion_matrix"])
 
-            logger.info(f"Epoch [{epoch+1}/{epochs}]  "
-            f"Adv — precision: {advanced_metrics['precision']:.4f}  recall: {advanced_metrics['recall']:.4f}  f1: {advanced_metrics['f1_score']:.4f}")
+            logger.info(
+                f"Epoch [{epoch+1}/{epochs}]  "
+                f"Adv — precision: {advanced_metrics['precision']:.4f}  "
+                f"recall: {advanced_metrics['recall']:.4f}  "
+                f"f1: {advanced_metrics['f1_score']:.4f}"
+            )
 
         #Saving best model
         if val_metrics["loss"] < best_val_loss:
@@ -97,11 +204,11 @@ def run_training(cfg: dict):
             
             if save_dir is not None:
                 torch.save({
-                    "epoch": epoch+1,
+                    "epoch": epoch + 1,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "val_loss": best_val_loss,
-                }, checkpoint_path)
+                }, save_checkpoint_path)
             else:
                 best_model = deepcopy(model.state_dict())
 
@@ -118,21 +225,23 @@ def run_training(cfg: dict):
         elif patience is not None and patience_counter >= patience:
             logger.info(f"Early stopping at epoch {epoch+1} — no improvement for {patience} epochs")
             break
-
+    
+    # Restore best weights and persist outputs
     if save_dir is not None:
-        checkpoint = torch.load(checkpoint_path, weights_only=True)
+        checkpoint = torch.load(save_checkpoint_path, weights_only=True, map_location=device)
         model.load_state_dict(checkpoint["model_state_dict"])
         
-        final_path = Path(checkpoint_dir) / "final_model.pth"
+        final_path = Path(save_checkpoint_dir) / "final_model.pth"
         torch.save(model.state_dict(), final_path)
 
         history_path = save_dir / "history.json"
         with open(history_path, "w") as f:
             json.dump(history, f, indent=1, default=lambda x: x.tolist())
 
-        logger.info(f"Final model and history saved to {checkpoint_dir}")
+        logger.info(f"Final model and history saved to {save_checkpoint_dir}")
     else:
-        model.load_state_dict(best_model)
+        if best_model is not None:
+            model.load_state_dict(best_model)
     
     logger.info("Training complete")
     
