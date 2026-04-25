@@ -35,25 +35,25 @@ def build_transforms(
 
     Parameters
     ----------
-    mean : list[float]
+    mean : list of float
         Per-channel mean values used for normalization.
-    std : list[float]
+    std : list float
         Per-channel standard deviation values used for normalization.
     image_size : int
         Final crop size passed to ``CenterCrop`` in the val/test pipeline
         and used as the target size in augmentations that require it.
     resize_size : int
         Size passed to ``Resize`` before center-cropping in the val/test pipeline.
-    augmentations : list[dict] or None, optional
+    augmentations : list of dict, optional
         List of augmentation configs, each with a ``name`` key and an optional
         ``params`` dict. Names must be present in ``AUGMENTATION_REGISTRY``.
-        Default is None.
 
     Returns
     -------
-    tuple[transforms.Compose, transforms.Compose]
-        ``train_transform``: pipeline with optional augmentations, ToTensor, and Normalize.
-        ``test_val_transform``: pipeline with Resize, CenterCrop, ToTensor, and Normalize.
+    train_transform : transforms.Compose
+        Pipeline with optional augmentations, ToTensor, and Normalize.
+    test_val_transform : transforms.Compose
+        Pipeline with Resize, CenterCrop, ToTensor, and Normalize.
 
     Raises
     ------
@@ -118,17 +118,28 @@ def get_dataloader(cfg: dict, seed: int | None) -> dict[str, DataLoader]:
     cfg : dict
         Configuration dictionary with the following keys:
 
-        - ``mean`` (list[float]): per-channel normalization mean.
-        - ``std`` (list[float]): per-channel normalization std.
-        - ``batch_size`` (int): number of samples per batch.
-        - ``train_dir`` (str): root directory for the training set.
-        - ``val_dir`` (str): root directory for the validation set.
-        - ``test_dir`` (str): root directory for the test set.
-        - ``num_workers`` (int, optional): number of DataLoader worker processes. Default 0.
-        - ``drop_last`` (bool, optional): drop the last incomplete batch during training. Default False.
-        - ``augmentations`` (list[dict], optional): augmentation configs passed to ``build_transforms``. Default None.
-        - ``image_size`` (int, optional): final crop size. Default 224.
-        - ``resize_size`` (int, optional): resize size before center crop. Default 256.
+        - ``mean`` : list of float 
+            Per-channel normalization mean.
+        - ``std`` : list of float 
+            Per-channel normalization std.
+        - ``batch_size`` : int
+            Number of samples per batch.
+        - ``train_dir`` : str
+            Root directory for the training set.
+        - ``val_dir`` : str
+            Root directory for the validation set.
+        - ``test_dir`` : str
+            Root directory for the test set.
+        - ``num_workers`` : int, default=0
+            Number of DataLoader worker processes.
+        - ``drop_last`` : bool, default=False
+            Drop the last incomplete batch during training.
+        - ``augmentations`` : list of dict, optional
+            Augmentation configs passed to ``build_transforms``.
+        - ``image_size`` : int, default=224
+            Final crop size.
+        - ``resize_size`` : int, default=256
+            Resize size before center crop.
 
     seed : int or None
         Seed used for the train DataLoader's ``generator`` and ``worker_init_fn``.
@@ -136,10 +147,13 @@ def get_dataloader(cfg: dict, seed: int | None) -> dict[str, DataLoader]:
 
     Returns
     -------
-    dict[str, DataLoader]
-        ``train_loader``: DataLoader with shuffling and optional drop_last.
-        ``val_loader``: DataLoader without shuffling.
-        ``test_loader``: DataLoader without shuffling.
+    dict of DataLoader
+        - ``train_loader``: Dataloader 
+            DataLoader with shuffling and optional drop_last.
+        - ``val_loader``: DataLoader
+            DataLoader without shuffling.
+        - ``test_loader``: DataLoader 
+            DataLoader without shuffling.
 
     Notes
     -----

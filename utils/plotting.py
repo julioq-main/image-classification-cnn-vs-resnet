@@ -20,14 +20,14 @@ def plot_loss(
     ----------
     train_loss : list of float
         Training loss values, one per epoch.
-    val_loss : list of float, optional
+    val_loss : list of float or None, optional
         Validation loss values, one per epoch. If ``None``, only the
-        training loss is plotted. Default is ``None``.
-    figsize : tuple of int, optional
-        Width and height of the figure in inches. Default is ``(8, 5)``.
-    save_path : str, optional
+        training loss is plotted.
+    figsize : tuple of int, default=(8,5)
+        Width and height of the figure in inches.
+    save_path : str or None, optional
         File path where the figure will be saved. If ``None``, the figure
-        is displayed interactively and not saved. Default is ``None``.
+        is displayed interactively and not saved.
     """    
     epochs = range(1, len(train_loss) + 1)
 
@@ -58,14 +58,14 @@ def plot_accuracy(
     ----------
     train_acc : list of float
         Training accuracy values, one per epoch.
-    val_acc : list of float, optional
+    val_acc : list of float or None, optional
         Validation accuracy values, one per epoch. If ``None``, only the
-        training accuracy is plotted. Default is ``None``.
-    figsize : tuple of int, optional
-        Width and height of the figure in inches. Default is ``(8, 5)``.
-    save_path : str, optional
+        training accuracy is plotted.
+    figsize : tuple of int, default=(8,5)
+        Width and height of the figure in inches.
+    save_path : str or None, optional
         File path where the figure will be saved. If ``None``, the figure
-        is displayed interactively and not saved. Default is ``None``.
+        is displayed interactively and not saved.
     """
     epochs = range(1, len(train_acc) + 1)
 
@@ -101,12 +101,12 @@ def plot_confusion_matrix(
         Square matrix of shape ``(n_classes, n_classes)`` where entry
         ``[i, j]`` is the number of samples with true class ``i``
         predicted as class ``j``.
-    class_names : list of str, optional
+    class_names : list of str or None, optional
         Labels for each class, used as tick labels on both axes. If
-        ``None``, integer indices are used. Default is ``None``.
-    save_path : str, optional
+        ``None``, integer indices are used.
+    save_path : str or None, optional
         File path where the figure will be saved. If ``None``, the figure
-        is displayed interactively and not saved. Default is ``None``.
+        is displayed interactively and not saved.
     """
     figsize = (max(6, len(confusion_matrix)), max(5, len(confusion_matrix) - 1))
     fig, ax = plt.subplots(figsize=figsize)
@@ -134,12 +134,12 @@ def _show_or_save(fig: Figure, save_path: str | None = None, dpi: int = 150) -> 
     ----------
     fig : matplotlib.figure.Figure
         Figure object to display or save.
-    save_path : str, optional
+    save_path : str or None, optional
         File path where the figure will be saved. If ``None``, the figure
-        is shown interactively via ``plt.show()``. Default is ``None``.
-    dpi : int, optional
+        is shown interactively via ``plt.show()``.
+    dpi : int, default=150
         Resolution in dots per inch used when saving. Has no effect when
-        displaying interactively. Default is ``150``.
+        displaying interactively.
     """
 
     if save_path is not None:

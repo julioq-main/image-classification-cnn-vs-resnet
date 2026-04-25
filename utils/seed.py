@@ -68,8 +68,8 @@ def worker_init_fn(worker_id: int, seed: int | None = None) -> None:
     ----------
     worker_id : int
         Index of the DataLoader worker process, assigned automatically by PyTorch.
-    seed : int or None
-        Base seed used to derive per-worker seeds. If None, no seeding is applied.
+    seed : int or None, optional
+        Base seed used to derive per-worker seeds. If ``None``, no seeding is applied.
     
     Notes
     -----

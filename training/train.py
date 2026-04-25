@@ -36,34 +36,38 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
     cfg : dict
         Configuration dictionary. Expected top-level keys:
 
-        seed : int, optional
+        - ``seed`` : int, optional
             Global random seed passed to the dataloader.
-        save_dir : str or path-like, optional
+        - ``save_dir`` : str or path-like, optional
             Root directory for checkpoints and history. If omitted, the best
             model state is kept in memory and no files are written.
-        model : dict
-            Passed directly to `get_model`. Must contain at least ``name``
+        - ``model`` : dict
+            Passed directly to ``get_model``. Must contain at least ``name``
             and ``num_classes``.
-        data : dict
-            Passed directly to `get_dataloader`. Must contain dataset paths,
+        - ``data`` : dict
+            Passed directly to ``get_dataloader``. Must contain dataset paths,
             normalization stats, and loader settings.
-        training : dict
-            optimizer : dict
-                Passed to `get_optim`. Must contain ``name`` and ``lr``.
-            epochs : int
+        - ``training`` : dict
+            Training settings. Expected keys:
+
+            - ``optimizer`` : dict
+                Passed to ``get_optim``. Must contain ``name`` and ``lr``.
+            - ``epochs`` : int
                 Maximum number of training epochs.
-            patience : int, optional
+            - ``patience`` : int, optional
                 Early stopping patience. Training stops when validation loss
                 has not improved for this many consecutive epochs.
-            loss_goal : float, optional
+            - ``loss_goal`` : float, optional
                 Training stops immediately when validation loss drops below
                 this threshold.
-        eval : dict
-            advanced_metrics : bool, optional
+        - ``eval`` : dict
+            Evaluation settings. Expected keys:
+
+            - ``advanced_metrics`` : bool, optional
                 If ``True``, per-epoch precision, recall, F1, and confusion
                 matrix are computed and stored in the returned history.
                 Defaults to ``False``.
-    checkpoint_path : str or path-like, optional
+    checkpoint_path : str or path-like or None, optional
         Path to a checkpoint file to resume training from. If provided, the
         model weights, optimizer state, best validation loss, and starting
         epoch are restored from the checkpoint before training begins.
@@ -89,7 +93,8 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         - ``precision`` : list of float
         - ``recall`` : list of float
         - ``f1_score`` : list of float
-        - ``confusion_matrix`` : list of list of int — one matrix per epoch.
+        - ``confusion_matrix`` : list of list of int
+            One matrix per epoch.
 
     Notes
     -----

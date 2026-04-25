@@ -22,12 +22,18 @@ def compute_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict:
     Returns
     -------
     dict
-        ``accuracy`` (float): fraction of correctly classified samples.
-        ``precision`` (float): macro-averaged precision across all classes.
-        ``recall`` (float): macro-averaged recall across all classes.
-        ``f1_score`` (float): macro-averaged F1-score across all classes.
-        ``confusion_matrix`` (np.ndarray): confusion matrix of shape ``(C, C)``,
-        where ``C`` is the number of classes.
+        Evaluation metrics. Keys:
+        
+        - ``accuracy`` : float
+            Fraction of correctly classified samples.
+        - ``precision`` : float
+            Macro-averaged precision across all classes.
+        - ``recall`` : float
+            Macro-averaged recall across all classes.
+        - ``f1_score`` : float
+            Macro-averaged F1-score across all classes.
+        - ``confusion_matrix`` : np.ndarray
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number of classes.
 
     Raises
     ------

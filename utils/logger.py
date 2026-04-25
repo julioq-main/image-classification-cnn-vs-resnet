@@ -19,10 +19,10 @@ def set_logger(log_level: str, log_file: str | None = None) -> None:
         Logging level. Valid values are ``DEBUG``, ``INFO``, ``WARNING``,
         ``ERROR``, and ``CRITICAL`` (case-insensitive). Falls back to
         ``INFO`` with a warning if an unrecognized value is provided.
-    log_file : str, optional
-        Path to the output log file. If None, output is directed to stdout
+    log_file : str or None, optional
+        Path to the output log file. If ``None``, output is directed to stdout
         only. The parent directory is created automatically if it does not
-        exist. Default is None.
+        exist.
 
     Notes
     -----

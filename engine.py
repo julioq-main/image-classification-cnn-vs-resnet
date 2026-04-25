@@ -31,8 +31,10 @@ def train_one_epoch(
     Returns
     -------
     dict
-        ``loss`` (float): average loss across all samples.
-        ``accuracy`` (float): accuracy across all samples.
+        - ``loss`` : float 
+            Average loss across all samples.
+        - ``accuracy`` : float
+            Accuracy across all samples.
     """
     model.train()
 
@@ -87,10 +89,14 @@ def eval_one_epoch(
     Returns
     -------
     dict
-        ``loss`` (float): average loss across all samples.
-        ``accuracy`` (float): accuracy across all samples.
-        ``targets`` (torch.Tensor): concatenated true labels for all batches.
-        ``preds`` (torch.Tensor): concatenated predicted class indices for all batches.
+        - ``loss`` : float
+            Average loss across all samples.
+        - ``accuracy`` : float 
+            Accuracy across all samples.
+        - ``targets`` : torch.Tensor
+            Concatenated true labels for all batches.
+        - ``preds`` : torch.Tensor
+            Concatenated predicted class indices for all batches.
 
     Notes
     -----
