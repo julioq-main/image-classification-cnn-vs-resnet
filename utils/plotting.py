@@ -1,8 +1,11 @@
 """
 Utilities for plotting metrics computed during training or evaluation
 """
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+import seaborn as sns
+
 
 def plot_loss(
         train_loss: list[float],
@@ -54,7 +57,7 @@ def plot_accuracy(
     train_acc : list[float]
         List of the training accuracy of the NN over epochs.
     val_acc : list[float], optional
-        List fo the validation accuracy of the NN over epochs. Default is None.
+        List of the validation accuracy of the NN over epochs. Default is None.
     fig_size : tuple[int]
         Tuple containing the size of the figure going to be plotted.
         Default is (8, 5).
@@ -76,6 +79,40 @@ def plot_accuracy(
 
     _show_or_save(fig, save_path=save_path)
 
+
+def plot_confusion_matrix(
+        confusion_matrix: np.ndarray,
+        class_names: list[str] | None = None,
+        save_path: str | None = None,
+    ) -> None:
+    """
+    Make a heatmap of a confusion matrix. Intended to use on final epoch only.
+
+    Parameters
+    ----------
+    confusion_matrix : np.ndarray
+        NdArray of the confusion matrix.
+    class_names : list[str], optional
+        List containing the name of each class. Default is None
+    save_path : str, optional
+        Path to save the plot. Default is None
+    """
+    figsize = (max(6, len(confusion_matrix)), max(5, len(confusion_matrix) - 1))
+    fig, ax = plt.subplots(figsize=figsize)
+    sns.heatmap(
+        confusion_matrix,
+        cmap="Blues",
+        annot=True,
+        fmt="d",
+        xticklabels=class_names or "auto",
+        yticklabels=class_names or "auto",
+        ax=ax,
+    )
+    ax.set_title("Confusion Matrix")
+    ax.set_xlabel("Predicted Class")
+    ax.set_ylabel("Actual Class")
+    plt.tight_layout()
+    _show_or_save(fig=fig, save_path=save_path)
 
 
 def _show_or_save(fig: Figure, save_path: str | None = None, dpi: int = 150) -> None:
