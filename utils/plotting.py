@@ -1,5 +1,5 @@
 """
-Utilities for plotting metrics computed during training or evaluation
+Utilities for plotting metrics computed during training or evaluation.
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,19 +14,20 @@ def plot_loss(
         save_path: str | None = None,
     ) -> None:
     """
-    Make a plot of the training (and validation) loss over epochs.
+    Plot training and validation loss over epochs.
 
     Parameters
     ----------
-    train_loss : list[float]
-        List of the training loss of the NN over epochs.
-    val_loss : list[float], optional
-        List fo the validation loss of the NN over epochs. Default is None.
-    fig_size : tuple[int]
-        Tuple containing the size of the figure going to be plotted.
-        Default is (8, 5).
+    train_loss : list of float
+        Training loss values, one per epoch.
+    val_loss : list of float, optional
+        Validation loss values, one per epoch. If ``None``, only the
+        training loss is plotted. Default is ``None``.
+    figsize : tuple of int, optional
+        Width and height of the figure in inches. Default is ``(8, 5)``.
     save_path : str, optional
-        Path to save the plot. Default is None
+        File path where the figure will be saved. If ``None``, the figure
+        is displayed interactively and not saved. Default is ``None``.
     """    
     epochs = range(1, len(train_loss) + 1)
 
@@ -39,6 +40,7 @@ def plot_loss(
     ax.set_title("Loss over epochs")
     ax.legend()
     ax.grid(True)
+    plt.tight_layout()
 
     _show_or_save(fig, save_path=save_path)
 
@@ -50,19 +52,20 @@ def plot_accuracy(
         save_path: str | None = None,
     ) -> None:
     """
-    Make a plot of the training (and validation) accuracy over epochs.
-
+    Plot training and validation accuracy over epochs.
+ 
     Parameters
     ----------
-    train_acc : list[float]
-        List of the training accuracy of the NN over epochs.
-    val_acc : list[float], optional
-        List of the validation accuracy of the NN over epochs. Default is None.
-    fig_size : tuple[int]
-        Tuple containing the size of the figure going to be plotted.
-        Default is (8, 5).
+    train_acc : list of float
+        Training accuracy values, one per epoch.
+    val_acc : list of float, optional
+        Validation accuracy values, one per epoch. If ``None``, only the
+        training accuracy is plotted. Default is ``None``.
+    figsize : tuple of int, optional
+        Width and height of the figure in inches. Default is ``(8, 5)``.
     save_path : str, optional
-        Path to save the plot. Default is None
+        File path where the figure will be saved. If ``None``, the figure
+        is displayed interactively and not saved. Default is ``None``.
     """
     epochs = range(1, len(train_acc) + 1)
 
@@ -76,6 +79,7 @@ def plot_accuracy(
     ax.set_title("Accuracy over epochs")
     ax.legend()
     ax.grid(True)
+    plt.tight_layout()
 
     _show_or_save(fig, save_path=save_path)
 
@@ -86,16 +90,23 @@ def plot_confusion_matrix(
         save_path: str | None = None,
     ) -> None:
     """
-    Make a heatmap of a confusion matrix. Intended to use on final epoch only.
-
+    Plot a confusion matrix as an annotated heatmap.
+ 
+    Figure size is scaled automatically based on the number of classes.
+    Intended to be used on final evaluation results, not per epoch.
+ 
     Parameters
     ----------
     confusion_matrix : np.ndarray
-        NdArray of the confusion matrix.
-    class_names : list[str], optional
-        List containing the name of each class. Default is None
+        Square matrix of shape ``(n_classes, n_classes)`` where entry
+        ``[i, j]`` is the number of samples with true class ``i``
+        predicted as class ``j``.
+    class_names : list of str, optional
+        Labels for each class, used as tick labels on both axes. If
+        ``None``, integer indices are used. Default is ``None``.
     save_path : str, optional
-        Path to save the plot. Default is None
+        File path where the figure will be saved. If ``None``, the figure
+        is displayed interactively and not saved. Default is ``None``.
     """
     figsize = (max(6, len(confusion_matrix)), max(5, len(confusion_matrix) - 1))
     fig, ax = plt.subplots(figsize=figsize)
@@ -116,6 +127,21 @@ def plot_confusion_matrix(
 
 
 def _show_or_save(fig: Figure, save_path: str | None = None, dpi: int = 150) -> None:
+    """
+    Display a figure interactively or save it to disk.
+ 
+    Parameters
+    ----------
+    fig : matplotlib.figure.Figure
+        Figure object to display or save.
+    save_path : str, optional
+        File path where the figure will be saved. If ``None``, the figure
+        is shown interactively via ``plt.show()``. Default is ``None``.
+    dpi : int, optional
+        Resolution in dots per inch used when saving. Has no effect when
+        displaying interactively. Default is ``150``.
+    """
+
     if save_path is not None:
         fig.savefig(save_path, dpi=dpi, bbox_inches="tight")
         plt.close(fig)
