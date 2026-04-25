@@ -31,6 +31,8 @@ def train_one_epoch(
     Returns
     -------
     dict
+        Loss and Accuracy from training one epoch
+
         - ``loss`` : float 
             Average loss across all samples.
         - ``accuracy`` : float
@@ -89,6 +91,8 @@ def eval_one_epoch(
     Returns
     -------
     dict
+        Basic metrics and raw predictions. Keys:
+
         - ``loss`` : float
             Average loss across all samples.
         - ``accuracy`` : float 

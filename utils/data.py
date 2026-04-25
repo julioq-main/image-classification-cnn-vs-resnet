@@ -148,6 +148,8 @@ def get_dataloader(cfg: dict, seed: int | None) -> dict[str, DataLoader]:
     Returns
     -------
     dict of DataLoader
+        Dictionary of train, val and test DataLoaders
+        
         - ``train_loader``: Dataloader 
             DataLoader with shuffling and optional drop_last.
         - ``val_loader``: DataLoader

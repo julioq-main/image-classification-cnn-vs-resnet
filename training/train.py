@@ -63,10 +63,9 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         - ``eval`` : dict
             Evaluation settings. Expected keys:
 
-            - ``advanced_metrics`` : bool, optional
+            - ``advanced_metrics`` : bool, default=False
                 If ``True``, per-epoch precision, recall, F1, and confusion
                 matrix are computed and stored in the returned history.
-                Defaults to ``False``.
     checkpoint_path : str or path-like or None, optional
         Path to a checkpoint file to resume training from. If provided, the
         model weights, optimizer state, best validation loss, and starting
