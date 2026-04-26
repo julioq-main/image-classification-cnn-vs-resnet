@@ -1,21 +1,39 @@
-#Importing libraries
+"""Script to compute the mean and std of the dataset"""
+
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader 
 
-#Setting batch size
 batch_size=32
 
-#Setting dataset
-norm_dataset = datasets.ImageFolder(root="image-classification-cnn-vs-resnet/data/processed/train", transform=transforms.Compose([transforms.Resize(256), transforms.CenterCrop(224), transforms.ToTensor()]))
+norm_dataset = datasets.ImageFolder(
+    root="image-classification-cnn-vs-resnet/data/processed/train",
+    transform=transforms.Compose([
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.ToTensor()
+    ])
+)
 
 #Setting up the loader, in GPU if it is available or CPU if not
 if torch.cuda.is_available():
     device = torch.device("cuda")
-    norm_loader = DataLoader(norm_dataset, batch_size=batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    norm_loader = DataLoader(
+        norm_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=4,
+        pin_memory=True,
+        )
 else:
     device = torch.device("cpu")
-    norm_loader = DataLoader(norm_dataset, batch_size=batch_size, shuffle=False, num_workers=0, pin_memory=False)
+    norm_loader = DataLoader(
+        norm_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=0,
+        pin_memory=False,
+        )
 
 #Compute mean and std
 mean=0.
