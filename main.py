@@ -9,7 +9,7 @@ import logging
 from training.train import run_training
 from utils.seed import set_seed
 from utils.logger import set_logger
-from utils.plotting import plot_accuracy, plot_loss
+from utils.plotting import plot_accuracy, plot_loss, plot_training_curves, plot_macro_advanced_metrics, plot_confusion_matrix
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def main():
     else:
         logger.info("Seed not set")
 
-    save_dir = args.save_dir or config.get("save_dir", None)
+    save_dir = config.get("save_dir", None)
 
     model, history = run_training(config)
 
@@ -74,17 +74,29 @@ def main():
     train_acc = history["train_accuracy"]
     val_loss = history["val_loss"]
     val_acc = history["val_accuracy"]
+    precision = history["precision"]
+    recall = history["recall"]
+    f1_score = history["f1_score"]
+    confusion_matrix = history["confusion_matrix"][-1]
 
     if save_dir is not None:
         loss_save_path = save_dir + "/visualisation/loss"
         acc_save_path = save_dir + "/visualisation/acc"
+        curves_save_path = save_dir + "/visualisation/training_curves"
+        macro_metrics_save_path = save_dir + "/visualisation/macro_metrics"
+        confusion_matrix_save_path = save_dir + "/visualisation/confusion_matrix"
     else:
         loss_save_path = None
         acc_save_path = None
-        
+        curves_save_path = None
+        macro_metrics_save_path = None
+        confusion_matrix_save_path = None
+
     plot_loss(train_loss=train_loss, val_loss=val_loss, save_path=loss_save_path)
     plot_accuracy(train_acc=train_acc, val_acc=val_acc, save_path=acc_save_path)
-
+    plot_training_curves(train_loss=train_loss, train_acc=train_acc, val_loss=val_loss, val_acc=val_acc, save_path=curves_save_path)
+    plot_macro_advanced_metrics(precision_score=precision, recall_score=recall, f1_score=f1_score, save_path=macro_metrics_save_path)
+    plot_confusion_matrix(confusion_matrix=confusion_matrix, save_path=confusion_matrix_save_path)
 
 if __name__ == "__main__":
     main()
