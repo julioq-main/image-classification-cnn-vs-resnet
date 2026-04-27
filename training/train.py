@@ -50,6 +50,8 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         - ``training`` : dict
             Training settings. Expected keys:
 
+            - ``checkpoint_interval`` : int
+                Interval of epochs between saving a checkpoint.
             - ``optimizer`` : dict
                 Passed to ``get_optim``. Must contain ``name`` and ``lr``.
             - ``epochs`` : int
@@ -98,14 +100,15 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
 
     Notes
     -----
-    The loss criterion is fixed to `torch.nn.CrossEntropyLoss` as this
+    The loss criterion is fixed to ``torch.nn.CrossEntropyLoss`` as this
     pipeline is designed exclusively for multi-class classification tasks.
 
-    When ``save_dir`` is provided, the best checkpoint is saved to
-    ``<save_dir>/checkpoints/checkpoint.pth`` and the final model weights to
-    ``<save_dir>/checkpoints/final_model.pth``. Training history is written
-    to ``<save_dir>/history.json``. Non-serializable values (e.g. tensors)
-    are converted via ``.tolist()`` automatically.
+    When ``save_dir`` is provided, in every ``checkpoint_interval`` the model
+    is saved to ``<save_dir>/checkpoints/checkpoint_epoch_{epoch}``, the best
+    checkpoint is saved to ``<save_dir>/checkpoints/best_model.pth`` and the
+    final model weights to ``<save_dir>/checkpoints/last_model.pth``. Training
+    history is written to ``<save_dir>/history.json``. Non-serializable values
+    (e.g. tensors) are converted via ``.tolist()`` automatically.
 
     Examples
     --------
@@ -116,59 +119,22 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
     """
     logger.info("Starting training")
     
-    epochs = cfg["training"]["epochs"]
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
     
-    model=get_model(cfg["model"]).to(device)
-    optimizer = get_optim(cfg["training"]["optimizer"], model)
-    seed = cfg.get("seed", None)
-    loaders = get_dataloader(cfg["data"], seed)
+    epochs = cfg["training"]["epochs"]
+    model = get_model(cfg["model"]).to(device)
     criterion = nn.CrossEntropyLoss()
+    optimizer = get_optim(cfg["training"]["optimizer"], model)
+    loaders = get_dataloader(cfg["data"], cfg.get("seed", None))
 
     use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
-    patience = cfg["training"].get("patience", None)
-    patience_counter = 0
-    loss_goal = cfg["training"].get("loss_goal", None)
-    best_val_loss = float("inf")
-    best_model = None  # Holds in-memory best weights when save_dir is None
-
-    #Resume from checkpoint if provided
-    if checkpoint_path is not None:
-        checkpoint = torch.load(
-            save_checkpoint_path,
-            weights_only=True,
-            map_location=device
-        )
-        model.load_state_dict(checkpoint["model_state_dict"])
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        start_epoch = checkpoint["epoch"]
-        best_val_loss = checkpoint["val_loss"]
-        logger.info(
-            f"Resuming from checkpoint at epoch {start_epoch}, "
-            f"val_loss {best_val_loss:.4f}"
-        )
-    else:
-        start_epoch = 0
-
-    save_dir = cfg.get("save_dir", None)
-    if save_dir is not None:
-        logger.info("Saving to disk is active")
-        save_dir = Path(save_dir)
-        save_checkpoint_dir = save_dir / "checkpoints"
-        save_checkpoint_dir.mkdir(parents=True, exist_ok=True)
-        save_checkpoint_path = save_checkpoint_dir / "checkpoint.pth"
-    else:
-        best_model = deepcopy(model.state_dict())
-        logger.info("Saving to disk is not active")
-    
     history = {
         "train_loss": [],
         "train_accuracy": [],
         "val_loss": [],
         "val_accuracy": [],
     }
-
     if use_advanced_metrics:
         logger.info("Advanced metrics are active")
         history.update({
@@ -177,7 +143,43 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             "macro_f1": [],
             "confusion_matrix": []
         })
+
+    #Resume from checkpoint if provided
+    if checkpoint_path is not None:
+        checkpoint = torch.load(
+            checkpoint_path,
+            weights_only=True,
+            map_location=device
+        )
+        model.load_state_dict(checkpoint["model_state_dict"])
+        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        start_epoch = checkpoint["epoch"]
+        best_val_loss = checkpoint["val_loss"]
+        #TODO add history from history_path, so it starts with data from checkpoint
         
+        logger.info(
+            f"Resuming from checkpoint at epoch {start_epoch}, "
+            f"val_loss {best_val_loss:.4f}"
+        )
+    else:
+        start_epoch = 0
+        best_val_loss = float("inf")
+
+    best_model = deepcopy(model.state_dict())
+    patience = cfg["training"].get("patience", None)
+    patience_counter = 0
+    checkpoint_interval = cfg["training"].get("checkpoint_interval", 10)
+    loss_goal = cfg["training"].get("loss_goal", None)
+    
+    save_dir = cfg.get("save_dir", None)
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_checkpoint_dir = save_dir / "checkpoints"
+        save_checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        logger.info("Saving to disk is active")
+    else:
+        logger.info("Saving to disk is not active")
+
     for epoch in range(start_epoch, epochs):
         model.train()
         train_metrics = train_one_epoch(
@@ -188,7 +190,8 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             device,
         )
         model.eval()
-        val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
+        with torch.no_grad():
+            val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
         
         history["train_loss"].append(train_metrics["loss"])
         history["train_accuracy"].append(train_metrics["accuracy"])
@@ -219,20 +222,31 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
                 f"f1: {advanced_metrics['macro_f1']:.4f}"
             )
 
+        if save_dir is not None and (epoch+1) % checkpoint_interval == 0:
+            save_checkpoint_path = save_checkpoint_dir / f"checkpoint_epoch_{epoch}"
+            torch.save({
+                "epoch": epoch + 1,
+                "model_state_dict": model.state_dict(),
+                "optimizer_state_dict": optimizer.state_dict(),
+                "val_loss": val_metrics["loss"],
+            }, save_checkpoint_path)
+            
+            logger.info(f"Checkpoint saved at epoch {epoch+1}")
+
         #Saving best model
         if val_metrics["loss"] < best_val_loss:
             best_val_loss = val_metrics["loss"]
             
             if save_dir is not None:
+                save_best_path = save_checkpoint_dir / "best_model.pth"
                 torch.save({
                     "epoch": epoch + 1,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "val_loss": best_val_loss,
-                }, save_checkpoint_path)
-            else:
-                best_model = deepcopy(model.state_dict())
-
+                }, save_best_path)
+            
+            best_model = deepcopy(model.state_dict())
             logger.info(f"Checkpoint saved — val_loss improved to {best_val_loss:.4f}")
             
             patience_counter = 0
@@ -249,26 +263,17 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             )
             break
     
-    # Restore best weights and persist outputs
     if save_dir is not None:
-        checkpoint = torch.load(
-            save_checkpoint_path,
-            weights_only=True,
-            map_location=device,
-        )
-        model.load_state_dict(checkpoint["model_state_dict"])
-        
-        final_path = Path(save_checkpoint_dir) / "final_model.pth"
-        torch.save(model.state_dict(), final_path)
+        save_last_path = Path(save_checkpoint_dir) / "last_model.pth"
+        torch.save(model.state_dict(), save_last_path)
 
         history_path = save_dir / "history.json"
         with open(history_path, "w") as f:
             json.dump(history, f, indent=1, default=lambda x: x.tolist())
 
-        logger.info(f"Final model and history saved to {save_checkpoint_dir}")
-    else:
-        if best_model is not None:
-            model.load_state_dict(best_model)
+        logger.info(f"Last model and history saved to {save_checkpoint_dir}")
+    
+    model.load_state_dict(best_model)
     
     logger.info("Training complete")
     
