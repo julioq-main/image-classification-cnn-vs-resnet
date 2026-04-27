@@ -2,11 +2,14 @@
 Utilities for plotting metrics computed during training or evaluation.
 """
 from pathlib import Path
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 import seaborn as sns
+
+logger = logging.getLogger(__name__)
 
 
 def plot_loss(
@@ -30,12 +33,14 @@ def plot_loss(
     save_path : str or Path or None, optional
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
-    """    
+    """
+    logger.info("Plotting training loss")
     epochs = range(1, len(train_loss) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_loss, label="Train Loss")
     if val_loss is not None:
+        logger.info("Plotting validation loss")
         ax.plot(epochs, val_loss, label="Val Loss")
     ax.set_xlabel("Epochs")
     ax.set_ylabel("Loss")
@@ -69,11 +74,13 @@ def plot_accuracy(
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
     """
+    logger.info("Plotting training accuracy")
     epochs = range(1, len(train_acc) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_acc, label="Train Accuracy")
     if val_acc is not None:
+        logger.info("Plotting validation accuracy")
         ax.plot(epochs, val_acc, label="Val Accuracy")
     ax.set_xlabel("Epochs")
     ax.set_ylabel("Accuracy")
@@ -116,12 +123,14 @@ def plot_training_curves(
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
     """
+    logger.info("Plotting training curves")
     epochs = range(1, len(train_loss) + 1)
 
     fig, (ax_loss, ax_acc) = plt.subplots(1, 2, figsize=figsize)
 
     ax_loss.plot(epochs, train_loss, label="Train Loss")
     if val_loss is not None:
+        logger.info("Plotting validation curves")
         ax_loss.plot(epochs, val_loss, label="Val Loss")
     ax_loss.set_xlabel("Epochs")
     ax_loss.set_ylabel("Loss")
@@ -168,6 +177,7 @@ def plot_macro_advanced_metrics(
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
     """
+    logger.info("Plotting macro averaged advanced metrics (precision, recall and F1)")
     epochs = range(1, len(precision_score) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
@@ -215,6 +225,7 @@ def plot_class_metrics(
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
     """
+    logger.info("Plotting per class advanced metrics (precision, recall and F1)")
     n_classes = len(precision_score)
     x = range(n_classes)
     labels = class_names or [str(i) for i in x]
@@ -264,6 +275,7 @@ def plot_confusion_matrix(
         File path where the figure will be saved. If ``None``, the figure
         is displayed interactively and not saved.
     """
+    logger.info("Plotting confusion matrix")
     figsize = (max(6, len(confusion_matrix)), max(6, len(confusion_matrix)))
     fig, ax = plt.subplots(figsize=figsize)
     sns.heatmap(
@@ -305,5 +317,7 @@ def _show_or_save(
     if save_path is not None:
         fig.savefig(save_path, dpi=dpi, bbox_inches="tight")
         plt.close(fig)
+        logger.info("Figure saved")
     else:
+        logger.info("Displaying figure")
         plt.show()
