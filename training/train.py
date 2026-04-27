@@ -16,7 +16,7 @@ import torch.nn as nn
 from models import get_model
 from utils.data import get_dataloader
 from utils.optim import get_optim
-from utils.metrics import compute_metrics
+from utils.metrics import compute_advanced_metrics
 from engine import train_one_epoch, eval_one_epoch
 
 logger = logging.getLogger(__name__)
@@ -64,8 +64,9 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             Evaluation settings. Expected keys:
 
             - ``advanced_metrics`` : bool, default=False
-                If ``True``, per-epoch precision, recall, F1, and confusion
-                matrix are computed and stored in the returned history.
+                If ``True``, per-epoch macro-averaged precision, recall and
+                F1 and confusion matrix are computed and stored in the
+                returned history.
     checkpoint_path : str or path-like or None, optional
         Path to a checkpoint file to resume training from. If provided, the
         model weights, optimizer state, best validation loss, and starting
@@ -89,9 +90,9 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         When ``advanced_metrics`` is enabled, the following keys are also
         present:
 
-        - ``precision`` : list of float
-        - ``recall`` : list of float
-        - ``f1_score`` : list of float
+        - ``macro_precision`` : list of float
+        - ``macro_recall`` : list of float
+        - ``macro_f1`` : list of float
         - ``confusion_matrix`` : list of list of int
             One matrix per epoch.
 
@@ -134,12 +135,19 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
 
     #Resume from checkpoint if provided
     if checkpoint_path is not None:
-        checkpoint = torch.load(save_checkpoint_path, weights_only=True, map_location=device)
+        checkpoint = torch.load(
+            save_checkpoint_path,
+            weights_only=True,
+            map_location=device
+        )
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         start_epoch = checkpoint["epoch"]
         best_val_loss = checkpoint["val_loss"]
-        logger.info(f"Resuming from checkpoint at epoch {start_epoch}, val_loss {best_val_loss:.4f}")
+        logger.info(
+            f"Resuming from checkpoint at epoch {start_epoch}, "
+            f"val_loss {best_val_loss:.4f}"
+        )
     else:
         start_epoch = 0
 
@@ -164,15 +172,21 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
     if use_advanced_metrics:
         logger.info("Advanced metrics are active")
         history.update({
-            "precision":[],
-            "recall": [],
-            "f1_score": [],
+            "macro_precision":[],
+            "macro_recall": [],
+            "macro_f1": [],
             "confusion_matrix": []
         })
         
     for epoch in range(start_epoch, epochs):
         model.train()
-        train_metrics = train_one_epoch(loaders["train_loader"], model, criterion, optimizer, device)
+        train_metrics = train_one_epoch(
+            loaders["train_loader"],
+            model,
+            criterion,
+            optimizer,
+            device,
+        )
         model.eval()
         val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
         
@@ -188,18 +202,21 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         )
         
         if use_advanced_metrics:
-            advanced_metrics = compute_metrics(val_metrics["targets"], val_metrics["preds"])
+            advanced_metrics = compute_advanced_metrics(
+                val_metrics["targets"],
+                val_metrics["preds"],
+            )
             
-            history["precision"].append(advanced_metrics["precision"])
-            history["recall"].append(advanced_metrics["recall"])
-            history["f1_score"].append(advanced_metrics["f1_score"])
+            history["macro_precision"].append(advanced_metrics["macro_precision"])
+            history["macro_recall"].append(advanced_metrics["macro_recall"])
+            history["macro_f1"].append(advanced_metrics["macro_f1"])
             history["confusion_matrix"].append(advanced_metrics["confusion_matrix"])
 
             logger.info(
                 f"Epoch [{epoch+1}/{epochs}]  "
-                f"Adv — precision: {advanced_metrics['precision']:.4f}  "
-                f"recall: {advanced_metrics['recall']:.4f}  "
-                f"f1: {advanced_metrics['f1_score']:.4f}"
+                f"Adv — precision: {advanced_metrics['macro_precision']:.4f}  "
+                f"recall: {advanced_metrics['macro_recall']:.4f}  "
+                f"f1: {advanced_metrics['macro_f1']:.4f}"
             )
 
         #Saving best model
@@ -227,12 +244,18 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             logger.info(f"Loss goal ({loss_goal}) reached at epoch {epoch+1}")
             break
         elif patience is not None and patience_counter >= patience:
-            logger.info(f"Early stopping at epoch {epoch+1} — no improvement for {patience} epochs")
+            logger.info(
+                f"Early stopping at epoch {epoch+1} — no improvement for {patience} epochs"
+            )
             break
     
     # Restore best weights and persist outputs
     if save_dir is not None:
-        checkpoint = torch.load(save_checkpoint_path, weights_only=True, map_location=device)
+        checkpoint = torch.load(
+            save_checkpoint_path,
+            weights_only=True,
+            map_location=device,
+        )
         model.load_state_dict(checkpoint["model_state_dict"])
         
         final_path = Path(save_checkpoint_dir) / "final_model.pth"
