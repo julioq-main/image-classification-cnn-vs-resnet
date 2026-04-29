@@ -249,7 +249,7 @@ def plot_class_metrics(
 
 
 def plot_confusion_matrix(
-        confusion_matrix: np.ndarray,
+        confusion_matrix: np.ndarray | list[list[int]],
         class_names: list[str] | None = None,
         cmap: str = "flare",
         save_path: str | Path | None = None,
@@ -262,7 +262,7 @@ def plot_confusion_matrix(
  
     Parameters
     ----------
-    confusion_matrix : np.ndarray
+    confusion_matrix : np.ndarray or list of list of int
         Square matrix of shape ``(n_classes, n_classes)`` where entry
         ``[i, j]`` is the number of samples with true class ``i``
         predicted as class ``j``.
@@ -276,6 +276,7 @@ def plot_confusion_matrix(
         is displayed interactively and not saved.
     """
     logger.info("Plotting confusion matrix")
+    confusion_matrix = np.array(confusion_matrix)
     figsize = (max(6, len(confusion_matrix)), max(6, len(confusion_matrix)))
     fig, ax = plt.subplots(figsize=figsize)
     sns.heatmap(
