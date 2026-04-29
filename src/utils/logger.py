@@ -1,7 +1,6 @@
 """
 Utilities for configuring the root logger with console and optional file output.
 """
-
 import logging
 import sys
 from pathlib import Path

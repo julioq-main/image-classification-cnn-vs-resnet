@@ -2,9 +2,6 @@
 models/architectures.py
 
 """
-
-
-#Import ResNet18 model
 from torchvision.models import resnet18, ResNet18_Weights 
 import torch.nn as nn
 
