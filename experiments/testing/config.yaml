@@ -27,6 +27,7 @@ model:
  num_classes: 25
 
 training:
+ checkpoint_interval: 10
  optimizer:
   name: "sgd"
   lr: 0.001

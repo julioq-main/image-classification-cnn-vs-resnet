@@ -22,7 +22,11 @@ from engine import train_one_epoch, eval_one_epoch
 logger = logging.getLogger(__name__)
 
 
-def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[nn.Module, dict]:
+def run_training(
+        cfg: dict,
+        checkpoint_path: str | Path | None = None,
+        history_path: str | Path | None = None,
+    ) -> tuple[nn.Module, dict]:
     """
     Execute the full training loop for an image classification model.
 
@@ -69,11 +73,17 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
                 If ``True``, per-epoch macro-averaged precision, recall and
                 F1 and confusion matrix are computed and stored in the
                 returned history.
-    checkpoint_path : str or path-like or None, optional
+    checkpoint_path : str or Path or None, optional
         Path to a checkpoint file to resume training from. If provided, the
         model weights, optimizer state, best validation loss, and starting
         epoch are restored from the checkpoint before training begins.
         If ``None``, training starts from scratch.
+    history_path : str or Path or None, optional
+        Path to a ``history.json`` file from a previous run, used to restore
+        training history when resuming from a checkpoint. If provided, the
+        history is truncated to ``checkpoint_path``'s epoch so it aligns with
+        the resumed model state. Ignored if ``checkpoint_path`` is ``None``.
+        If ``None``, history will only cover epochs from the current run.
                 
     Returns
     -------
@@ -84,19 +94,29 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         Training history with the following keys, each being a list of
         per-epoch values:
 
+        - ``epoch``: list of int
+            Epoch numbers corresponding to each entry.
         - ``train_loss`` : list of float
+            Average training loss across all samples for each epoch.
         - ``train_accuracy`` : list of float
+            Average training accuracy across all samples for each epoch.
         - ``val_loss`` : list of float
+            Average validation loss across all samples for each epoch.
         - ``val_accuracy`` : list of float
+            Average validation accuracy across all samples for each epoch.
 
         When ``advanced_metrics`` is enabled, the following keys are also
         present:
 
         - ``macro_precision`` : list of float
+            Macro-averaged precision across all classes for each epoch.
         - ``macro_recall`` : list of float
+            Macro-averaged recall across all classes for each epoch.
         - ``macro_f1`` : list of float
+            Macro-averaged F1-score across all classes for each epoch.
         - ``confusion_matrix`` : list of list of int
-            One matrix per epoch.
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number of
+            classes. One matrix per epoch.
 
     Notes
     -----
@@ -110,12 +130,25 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
     history is written to ``<save_dir>/history.json``. Non-serializable values
     (e.g. tensors) are converted via ``.tolist()`` automatically.
 
+    If ``history_path`` is provided, the loaded history keys must match those
+    of the current run. If they differ (e.g. ``advanced_metrics`` was toggled
+    between runs), the loaded history is discarded and a warning is logged.
+    If ``history_path`` is provided without ``checkpoint_path``, it is ignored
+    and a warning is logged.
+
     Examples
     --------
     >>> with open("config.yaml") as f:
     ...     cfg = yaml.safe_load(f)
     >>> model, history = run_training(cfg)
     >>> print(history["val_loss"])
+
+    >>> # Resume training from a previous checkpoint
+    >>> model, history = run_training(
+    ...     cfg,
+    ...     checkpoint_path="experiments/exp001/checkpoints/best_model.pth",
+    ...     history_path="experiments/exp001/history.json"
+    ...     )
     """
     logger.info("Starting training")
     
@@ -130,6 +163,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
 
     use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
     history = {
+        "epoch": [],
         "train_loss": [],
         "train_accuracy": [],
         "val_loss": [],
@@ -141,7 +175,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             "macro_precision":[],
             "macro_recall": [],
             "macro_f1": [],
-            "confusion_matrix": []
+            "confusion_matrix": [],
         })
 
     #Resume from checkpoint if provided
@@ -149,21 +183,45 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         checkpoint = torch.load(
             checkpoint_path,
             weights_only=True,
-            map_location=device
+            map_location=device,
         )
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
         start_epoch = checkpoint["epoch"]
         best_val_loss = checkpoint["val_loss"]
-        #TODO add history from history_path, so it starts with data from checkpoint
         
         logger.info(
             f"Resuming from checkpoint at epoch {start_epoch}, "
             f"val_loss {best_val_loss:.4f}"
         )
+
+        if history_path is not None:
+            with open(history_path, "r") as f:
+                checkpoint_history = json.load(f)
+            checkpoint_keys = set(checkpoint_history.keys())
+            current_keys = set(history.keys())
+            if checkpoint_keys != current_keys:
+                logger.warning(
+                    "History key mismatch between checkpoint history and current run "
+                    f"(loaded from checkpoint: {checkpoint_keys}, expected: {current_keys}). "
+                    "Discarding history from checkpoint."
+                    )
+            else:
+                history = {k:v[:start_epoch] for k,v in checkpoint_history.items()}
+                logger.info("History loaded from checkpoint.")
+        else:
+            logger.info(
+                f"No history_path given. History will start at epoch {start_epoch+1}"
+                )        
     else:
         start_epoch = 0
         best_val_loss = float("inf")
+
+        if history_path is not None:
+            logger.warning(
+            "history_path provided but no checkpoint_path given. "
+            "history_path will be ignored."
+            )
 
     best_model = deepcopy(model.state_dict())
     patience = cfg["training"].get("patience", None)
@@ -193,6 +251,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         with torch.no_grad():
             val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
         
+        history["epoch"].append(epoch+1)
         history["train_loss"].append(train_metrics["loss"])
         history["train_accuracy"].append(train_metrics["accuracy"])
         history["val_loss"].append(val_metrics["loss"])
@@ -213,7 +272,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             history["macro_precision"].append(advanced_metrics["macro_precision"])
             history["macro_recall"].append(advanced_metrics["macro_recall"])
             history["macro_f1"].append(advanced_metrics["macro_f1"])
-            history["confusion_matrix"].append(advanced_metrics["confusion_matrix"])
+            history["confusion_matrix"].append(advanced_metrics["confusion_matrix"].tolist())
 
             logger.info(
                 f"Epoch [{epoch+1}/{epochs}]  "
@@ -223,7 +282,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             )
 
         if save_dir is not None and (epoch+1) % checkpoint_interval == 0:
-            save_checkpoint_path = save_checkpoint_dir / f"checkpoint_epoch_{epoch}"
+            save_checkpoint_path = save_checkpoint_dir / f"checkpoint_epoch_{epoch+1}"
             torch.save({
                 "epoch": epoch + 1,
                 "model_state_dict": model.state_dict(),
@@ -251,7 +310,7 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
             
             patience_counter = 0
         else:
-            patience_counter +=1
+            patience_counter += 1
 
         # Conditional stops
         if loss_goal is not None and val_metrics["loss"] < loss_goal:
@@ -267,8 +326,8 @@ def run_training(cfg: dict, checkpoint_path: str | Path | None = None) -> tuple[
         save_last_path = Path(save_checkpoint_dir) / "last_model.pth"
         torch.save(model.state_dict(), save_last_path)
 
-        history_path = save_dir / "history.json"
-        with open(history_path, "w") as f:
+        save_history_path = save_dir / "history.json"
+        with open(save_history_path, "w") as f:
             json.dump(history, f, indent=1, default=lambda x: x.tolist())
 
         logger.info(f"Last model and history saved to {save_checkpoint_dir}")
