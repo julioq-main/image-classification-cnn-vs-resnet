@@ -89,6 +89,7 @@ def run_test(
     """
     seed = cfg.get("seed", None)
     test_dataloader = get_dataloader(cfg["data"], seed=seed)["test_loader"]
+    class_names = test_dataloader.dataset.classes
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -115,7 +116,7 @@ def run_test(
         device=device,
         )
     
-    if cfg["eval"].get("advanced_metrics", False):
+    if cfg["test"].get("advanced_metrics", False):
         logger.info("Advanced metrics are active")
         targets = metrics["targets"]
         preds = metrics["preds"]
@@ -137,4 +138,4 @@ def run_test(
             json.dump(test_metrics, f, indent=1, default=lambda x: x.tolist())
         logger.info(f"Test metrics saved to {save_dir}")
 
-    return test_metrics
+    return test_metrics, class_names
