@@ -117,7 +117,9 @@ def run_training(
         - ``confusion_matrix`` : list of list of int
             Confusion matrix of shape ``(C, C)``, where ``C`` is the number of
             classes. One matrix per epoch.
-
+    class_names: list of str
+        Labels for each class.
+            
     Notes
     -----
     The loss criterion is fixed to ``torch.nn.CrossEntropyLoss`` as this

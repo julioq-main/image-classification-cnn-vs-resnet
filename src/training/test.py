@@ -51,7 +51,7 @@ def run_test(
 
     Returns
     -------
-    dict
+    test_metrics : dict
         Dictionary containing test metrics with the following keys:
 
         - ``loss`` : float
@@ -81,6 +81,8 @@ def run_test(
             Per-class recall score.
         - ``class_f1`` : list of float
             Per-class f1 score.
+    class_names : list of str
+        Labels for each class.
 
     Raises
     ------
