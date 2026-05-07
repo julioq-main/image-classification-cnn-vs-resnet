@@ -1,4 +1,5 @@
 """
+Testing pipeline for image classification models.
 """
 import logging
 from pathlib import Path
@@ -20,6 +21,72 @@ def run_test(
         model: nn.Module | None = None,
         checkpoint_path: str | Path | None = None,
     ) -> dict:
+    """
+    Evaluates a model on the test dataset and returns the computed metrics
+
+    Parameters
+    ----------
+    cfg : dict
+        Configuration dictionary. Expected top-level keys:
+
+        - ``seed`` : int, optional
+            Global random seed passed to the dataloader.
+        - ``save_dir`` : str or Path, optional
+            Root directory to save ``test_metrics``.
+        - ``model`` : dict
+            Passed directly to ``get_model``. Must contain at least ``name``
+            and ``num_classes``. Only accessed when ``checkpoint_path`` is
+            provided instead of ``model``.
+        - ``data`` : dict
+            Passed directly to ``get_dataloader``. Must contain dataset paths,
+            normalization stats, and loader settings.
+        - ``eval`` : dict
+            Contains ``advanced_metrics``, if is set to ``True`` macro-averaged
+            and per-class advanced metrics are computed.
+    model : nn.Module, optional
+        Model to evaluate. If None, model will be loaded from ``checkpoint_path``.
+    checkpoint_path : str or Path, optional
+        Path to a checkpoint file containing 'model_state_dict'. Used only
+        if model is None.
+
+    Returns
+    -------
+    dict
+        Dictionary containing test metrics with the following keys:
+
+        - ``loss`` : float
+            Average loss across all samples.
+        - ``accuracy`` : float 
+            Accuracy across all samples.
+        - ``targets`` : torch.Tensor
+            Concatenated true labels for all batches.
+        - ``preds`` : torch.Tensor
+            Concatenated predicted class indices for all batches.
+
+        When ``advanced_metrics`` is enabled, the following keys are also
+        present:
+
+        - ``macro_precision`` : float
+            Macro-averaged precision across all classes.
+        - ``macro_recall`` : float
+            Macro-averaged recall across all classes.
+        - ``macro_f1`` : float
+            Macro-averaged F1-score across all classes.
+        - ``confusion_matrix`` : np.ndarray
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number
+            of classes.
+        - ``class_precision`` : list of float
+            Per-class precision score.
+        - ``class_recall`` : list of float
+            Per-class recall score.
+        - ``class_f1`` : list of float
+            Per-class f1 score.
+
+    Raises
+    ------
+    ValueError
+        If both ``model`` and ``checkpoint_path`` are ``None``.
+    """
     seed = cfg.get("seed", None)
     test_dataloader = get_dataloader(cfg["data"], seed=seed)["test_loader"]
     criterion = nn.CrossEntropyLoss()
