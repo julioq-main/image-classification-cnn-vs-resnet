@@ -9,6 +9,7 @@ import torch.nn as nn
 
 from utils.data import get_dataloader
 from engine import eval_one_epoch
+from models import get_model
 from utils.metrics import compute_class_metrics, compute_advanced_metrics
 
 logger = logging.getLogger(__name__)
@@ -16,12 +17,30 @@ logger = logging.getLogger(__name__)
 
 def run_test(
         cfg: dict,
-        model: nn.Module,
+        model: nn.Module | None = None,
+        checkpoint_path: str | Path | None = None,
     ) -> dict:
     seed = cfg.get("seed", None)
     test_dataloader = get_dataloader(cfg["data"], seed=seed)["test_loader"]
     criterion = nn.CrossEntropyLoss()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    if model is None:
+        if checkpoint_path is not None:
+            checkpoint = torch.load(
+                checkpoint_path,
+                weights_only=True,
+                map_location=device,
+            )
+            model = get_model(cfg["model"])
+            model.load_state_dict(checkpoint["model_state_dict"])
+        else:
+            raise ValueError(
+                "No model found. Either model or checkpoint_path must be provided"
+            )
+    model = model.to(device)
+
+    model.eval()
     metrics = eval_one_epoch(
         dataloader=test_dataloader,
         model=model,
@@ -45,6 +64,7 @@ def run_test(
     save_dir = cfg.get("save_dir", None)
     if save_dir is not None:
         save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
         save_path = save_dir / "test_metrics.json"
         with open(save_path, "w") as f:
             json.dump(test_metrics, f, indent=1, default=lambda x: x.tolist())
