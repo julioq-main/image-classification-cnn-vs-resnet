@@ -155,13 +155,14 @@ def run_training(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
     
-    epochs = cfg["training"]["epochs"]
+    epochs = cfg["train"]["epochs"]
     model = get_model(cfg["model"]).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = get_optim(cfg["training"]["optimizer"], model)
+    optimizer = get_optim(cfg["train"]["optimizer"], model)
     loaders = get_dataloader(cfg["data"], cfg.get("seed", None))
+    class_names = loaders["train_loader"].dataset.classes
 
-    use_advanced_metrics = cfg["eval"].get("advanced_metrics", False)
+    use_advanced_metrics = cfg["train"].get("advanced_metrics", False)
     history = {
         "epoch": [],
         "train_loss": [],
@@ -224,10 +225,10 @@ def run_training(
             )
 
     best_model = deepcopy(model.state_dict())
-    patience = cfg["training"].get("patience", None)
+    patience = cfg["train"].get("patience", None)
     patience_counter = 0
-    checkpoint_interval = cfg["training"].get("checkpoint_interval", 10)
-    loss_goal = cfg["training"].get("loss_goal", None)
+    checkpoint_interval = cfg["train"].get("checkpoint_interval", 10)
+    loss_goal = cfg["train"].get("loss_goal", None)
     
     save_dir = cfg.get("save_dir", None)
     if save_dir is not None:
@@ -336,4 +337,4 @@ def run_training(
     
     logger.info("Training complete")
     
-    return model, history
+    return model, history, class_names
