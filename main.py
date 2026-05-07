@@ -1,29 +1,42 @@
 """
-
+TODO add plotting functions and logic
 """
 import yaml
 import argparse
 import logging
+from pathlib import Path
 
-from training.train import run_training
+from training import run_training, run_test
+from models import get_model
 from utils.seed import set_seed
 from utils.logger import set_logger
-from utils.plotting import plot_accuracy, plot_loss, plot_training_curves, plot_macro_advanced_metrics, plot_confusion_matrix
+from utils.plotting import plot_test, plot_train
 
 logger = logging.getLogger(__name__)
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(prog="Parser training and benchmarking models",)
+    parser = argparse.ArgumentParser(
+        prog="main.py",
+        description="Training and benchmarking models",
+        )
     parser.add_argument(
         "--config",
-        "-c",
+        "-cfg",
         type=str,
         default="experiments/testing/config.yaml",
         required=False,
         help="Path to the YAML config file (e.g. config.yaml)",
     )
-    
+    parser.add_argument(
+        "--mode",
+        "-m",
+        type=str,
+        choices=["test","train"],
+        required=False,
+        default="train",
+        help="Mode for executing: test or train",
+    )
     parser.add_argument(
         "--log-level",
         "-l",
@@ -32,7 +45,6 @@ def parse_args():
         required=False,
         help="Level of the logger",
     )
-    
     parser.add_argument(
         "--log-file",
         type=str,
@@ -40,78 +52,99 @@ def parse_args():
         required=False,
         help="Path to the logger file",
     )
-    
-
     parser.add_argument(
         "--checkpoint",
         "-ckpt",
         type=str,
         default=None,
-        required=False,
+        required=True,
         help="Path to a checkpoint file to resume training from",
     )
-
     parser.add_argument(
-        "--mode",
-        "-m",
+        "--history",
+        "-hist",
         type=str,
-        choices=["test","train"],
-        default="train",
-        help="Mode for executing: test or train"
+        default=None,
+        required=False,
+        help="Path to a history file from a previous run",
     )
+
+    args = parser.parse_args()
     
-    return parser.parse_args()
+    if args.mode == "test" and args.checkpoint is None:
+        parser.error("--checkpoint is required when mode is 'test'")
+    
+    return args
 
 
 def main():
     
     args = parse_args()
-    
+
     with open(args.config, "r") as f:
-        config = yaml.safe_load(f)
+        cfg = yaml.safe_load(f)
 
-    log_level = args.log_level or config.get("log_level","INFO")
-    log_file = args.log_file or config.get("log_file",None)
-
+    log_level = args.log_level or cfg.get("log_level","INFO")
+    log_file = args.log_file or cfg.get("log_file",None)
     set_logger(log_level=log_level, log_file=log_file)
 
-    seed = config.get("seed", None)
+    seed = cfg.get("seed", None)
     if seed is not None:
         set_seed(seed)
     else:
         logger.info("Seed not set")
 
-    save_dir = config.get("save_dir", None)
+    save_dir = cfg.get("save_dir", None)
 
-    model, history = run_training(config)
+    if args.mode == "test":
+        checkpoint_path = args.checkpoint
 
-    train_loss = history["train_loss"]
-    train_acc = history["train_accuracy"]
-    val_loss = history["val_loss"]
-    val_acc = history["val_accuracy"]
-    precision = history["precision"]
-    recall = history["recall"]
-    f1_score = history["f1_score"]
-    confusion_matrix = history["confusion_matrix"][-1]
+        test_metrics, class_names = run_test(cfg, checkpoint_path=checkpoint_path)
+    
+        if cfg["test"].get("plotting", False):
+            if save_dir is not None:
+                save_plot_dir = Path(save_dir) / "visualisation" / "test"
+        
+        plot_test(
+            test_metrics,
+            class_names=class_names,
+            save_dir=save_plot_dir,
+        )
 
-    if save_dir is not None:
-        loss_save_path = save_dir + "/visualisation/loss"
-        acc_save_path = save_dir + "/visualisation/acc"
-        curves_save_path = save_dir + "/visualisation/training_curves"
-        macro_metrics_save_path = save_dir + "/visualisation/macro_metrics"
-        confusion_matrix_save_path = save_dir + "/visualisation/confusion_matrix"
     else:
-        loss_save_path = None
-        acc_save_path = None
-        curves_save_path = None
-        macro_metrics_save_path = None
-        confusion_matrix_save_path = None
+        checkpoint_path = args.checkpoint
+        history_path = args.history
+        model, history, class_names = run_training(
+            cfg,
+            checkpoint_path=checkpoint_path,
+            history_path=history_path,
+        )
+        
+        train_plot_cfg = cfg["train"].get("plotting", False)
+        if train_plot_cfg and train_plot_cfg.get("enabled", False):
+            if save_dir is not None:
+                save_plot_dir = Path(save_dir) / "visualisation" / "train"
+                
+            plot_train(
+                history,
+                cfg=train_plot_cfg,
+                class_names=class_names,
+                save_dir=save_plot_dir,
+            )
 
-    plot_loss(train_loss=train_loss, val_loss=val_loss, save_path=loss_save_path)
-    plot_accuracy(train_acc=train_acc, val_acc=val_acc, save_path=acc_save_path)
-    plot_training_curves(train_loss=train_loss, train_acc=train_acc, val_loss=val_loss, val_acc=val_acc, save_path=curves_save_path)
-    plot_macro_advanced_metrics(precision_score=precision, recall_score=recall, f1_score=f1_score, save_path=macro_metrics_save_path)
-    plot_confusion_matrix(confusion_matrix=confusion_matrix, save_path=confusion_matrix_save_path)
+        test_metrics, class_names = run_test(cfg, model=model)
+        test_plot_cfg = cfg["test"].get("plotting", False)
+        if test_plot_cfg and test_plot_cfg.get("enabled", False):
+            if save_dir is not None:
+                save_plot_dir = Path(save_dir) / "visualisation" / "test"
+            
+            plot_test(
+                test_metrics,
+                class_names=class_names,
+                save_dir=save_plot_dir,
+            )
+    
+
 
 if __name__ == "__main__":
     main()

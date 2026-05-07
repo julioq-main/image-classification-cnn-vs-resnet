@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 def plot_loss(
         train_loss: list[float],
         val_loss: list[float] | None = None,
+        epochs: list[int] | None = None,
         figsize: tuple[int] = (8, 5),
         save_path: str | Path | None = None,
     ) -> None:
@@ -28,6 +29,9 @@ def plot_loss(
     val_loss : list of float or None, optional
         Validation loss values, one per epoch. If ``None``, only the
         training loss is plotted.
+    epochs : list of int, optional
+        Epoch indices used as the x-axis. If ``None``, defaults to
+        ``range(1, len(train_loss) + 1)``.
     figsize : tuple of int, default=(8,5)
         Width and height of the figure in inches.
     save_path : str or Path or None, optional
@@ -35,7 +39,8 @@ def plot_loss(
         is displayed interactively and not saved.
     """
     logger.info("Plotting training loss")
-    epochs = range(1, len(train_loss) + 1)
+    if epochs is None:
+        epochs = range(1, len(train_loss) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_loss, label="Train Loss")
@@ -55,6 +60,7 @@ def plot_loss(
 def plot_accuracy(
         train_acc: list[float],
         val_acc: list[float] | None = None,
+        epochs: list[int] | None = None,
         figsize: tuple[int] = (8, 5),
         save_path: str | Path | None = None,
     ) -> None:
@@ -68,6 +74,9 @@ def plot_accuracy(
     val_acc : list of float or None, optional
         Validation accuracy values, one per epoch. If ``None``, only the
         training accuracy is plotted.
+    epochs : list of int, optional
+        Epoch indices used as the x-axis. If ``None``, defaults to
+        ``range(1, len(train_acc) + 1)``.
     figsize : tuple of int, default=(8,5)
         Width and height of the figure in inches.
     save_path : str or Path or None, optional
@@ -75,7 +84,8 @@ def plot_accuracy(
         is displayed interactively and not saved.
     """
     logger.info("Plotting training accuracy")
-    epochs = range(1, len(train_acc) + 1)
+    if epochs is None:
+        epochs = range(1, len(train_acc) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, train_acc, label="Train Accuracy")
@@ -98,6 +108,7 @@ def plot_training_curves(
         train_acc: list[float],
         val_loss: list[float] | None = None,
         val_acc: list[float] | None = None,
+        epochs: list[int] | None = None,
         figsize: tuple[int] = (14,5),
         save_path: str | Path | None = None,
     ) -> None:
@@ -117,6 +128,9 @@ def plot_training_curves(
     val_acc : list of float or None, optional
         Validation accuracy values, one per epoch. If ``None``, only the
         training accuracy is plotted.
+    epochs : list of int, optional
+        Epoch indices used as the x-axis. If ``None``, defaults to
+        ``range(1, len(train_loss) + 1)``.
     figsize : tuple of int, default=(14,5)
         Width and height of the figure in inches.
     save_path : str or Path or None, optional
@@ -124,7 +138,8 @@ def plot_training_curves(
         is displayed interactively and not saved.
     """
     logger.info("Plotting training curves")
-    epochs = range(1, len(train_loss) + 1)
+    if epochs is None:
+        epochs = range(1, len(train_loss) + 1)
 
     fig, (ax_loss, ax_acc) = plt.subplots(1, 2, figsize=figsize)
 
@@ -157,6 +172,7 @@ def plot_macro_advanced_metrics(
         precision_score: list[float],
         recall_score: list[float],
         f1_score: list[float],
+        epochs: list[int] | None = None,
         figsize: tuple[int] = (8, 5),
         save_path: str | Path | None = None,
     ) -> None:
@@ -171,6 +187,9 @@ def plot_macro_advanced_metrics(
         Macro-averaged score values, one per epoch.
     f1_score : list of float
         Macro-averaged F1 values, one per epoch.
+    epochs : list of int, optional
+        Epoch indices used as the x-axis. If ``None``, defaults to
+        ``range(1, len(precision_loss) + 1)``.
     figsize : tuple of int, default=(8,5)
         Width and height of the figure in inches.
     save_path : str or Path or None, optional
@@ -178,7 +197,8 @@ def plot_macro_advanced_metrics(
         is displayed interactively and not saved.
     """
     logger.info("Plotting macro averaged advanced metrics (precision, recall and F1)")
-    epochs = range(1, len(precision_score) + 1)
+    if epochs is None:
+        epochs = range(1, len(precision_score) + 1)
 
     fig, ax = plt.subplots(figsize=figsize)
     ax.plot(epochs, precision_score, label="Precision")
@@ -227,7 +247,7 @@ def plot_class_metrics(
     """
     logger.info("Plotting per class advanced metrics (precision, recall and F1)")
     n_classes = len(precision_score)
-    x = range(n_classes)
+    x = np.arange(n_classes)
     labels = class_names or [str(i) for i in x]
 
     fig, ax = plt.subplots(figsize=(max(8, n_classes * 1.2), 5))
@@ -241,6 +261,8 @@ def plot_class_metrics(
     ax.set_ylim(0, 1.05)
     ax.set_title("Per-Class Metrics")
     ax.legend()
+    ax.bar_label(ax.containers[0], fmt="%.2f", padding=2, fontsize=8)
+    ax.bar_label(ax.containers[1], fmt="%.2f", padding=2, fontsize=8)
     ax.bar_label(ax.containers[2], fmt="%.2f", padding=2, fontsize=8)  # F1 labels
     ax.grid(axis="y", linestyle="--", alpha=0.5)
     plt.tight_layout()
@@ -295,6 +317,131 @@ def plot_confusion_matrix(
     _show_or_save(fig=fig, save_path=save_path)
 
 
+def plot_train(
+        history: dict,
+        cfg: dict | None = None,
+        class_names: list[str] | None = None,
+        save_dir: str | Path | None = None,
+    ) -> None:
+    """
+    _summary_
+
+    Parameters
+    ----------
+    history : dict
+        _description_
+    cfg : dict | None, optional
+        _description_, by default None
+    class_names : list[str] | None, optional
+        _description_, by default None
+    save_dir : str | Path | None, optional
+        _description_, by default None
+    """
+    logger.info("Plotting training metrics")
+
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        save_plot_loss = save_dir / "loss_curve"
+        save_plot_accuracy = save_dir / "accuracy_curve"
+        save_plot_training_curves = save_dir / "training_curves"
+    else:
+        save_plot_loss = None
+        save_plot_accuracy = None
+        save_plot_training_curves = None
+
+    epochs = history["epoch"]
+    train_loss = history["train_loss"]
+    train_acc = history["train_accuracy"]
+    val_loss = history["val_loss"]
+    val_acc = history["val_accuracy"]
+
+    plot_loss(
+        train_loss=train_loss,
+        val_loss=val_loss,
+        epochs=epochs,
+        save_path=save_plot_loss,
+    )
+    plot_accuracy(
+        train_acc=train_acc,
+        val_acc=val_acc,
+        epochs=epochs,
+        save_path=save_plot_accuracy
+    )
+    plot_training_curves(
+        train_loss=train_loss,
+        train_acc=train_acc,
+        val_loss=val_loss,
+        val_acc=val_acc,
+        epochs=epochs,
+        save_path=save_plot_training_curves
+    )
+
+    if cfg is not None and cfg.get("advanced_metrics", False):
+        logger.info("Plotting advanced training metrics is active")
+        macro_precision = history["macro_precision"]
+        macro_recall = history["macro_recall"]
+        macro_f1 = history["macro_f1"]
+        confusion_matrix = history["confusion_matrix"][-1]
+        
+        if save_dir is not None:
+            save_plot_macro_advanced_metrics = save_dir / "macro_advanced_metrics"
+            save_plot_confusion_matrix = save_dir / "confusion_matrix"
+        else:
+            save_plot_macro_advanced_metrics = None
+            save_plot_confusion_matrix= None
+
+        plot_macro_advanced_metrics(
+            precision_score=macro_precision,
+            recall_score=macro_recall,
+            f1_score=macro_f1,
+            epochs=epochs,
+            save_path=save_plot_macro_advanced_metrics,
+        )
+        plot_confusion_matrix(
+            confusion_matrix=confusion_matrix,
+            class_names=class_names,
+            save_path=save_plot_confusion_matrix,
+        )
+
+
+def plot_test(
+        test_metrics: dict,
+        class_names: list[str] | None = None,
+        save_dir: str | Path | None = None,
+) -> None:
+    
+    logger.info("Plotting training metrics")
+
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(parents=True, exist_ok=True)
+        save_plot_class_metrics = save_dir / "class_metrics"
+        save_plot_confusion_matrix= save_dir / "confusion_matrix"
+    else:
+        save_plot_class_metrics = None
+        save_plot_confusion_matrix = None
+
+    class_precision = test_metrics["class_precision"]
+    class_recall = test_metrics["class_recall"]
+    class_f1 = test_metrics["class_f1"]
+    confusion_matrix = test_metrics["confusion_matrix"]
+
+    plot_class_metrics(
+        precision_score=class_precision,
+        recall_score=class_recall,
+        f1_score=class_f1,
+        class_names=class_names,
+        save_path=save_plot_class_metrics,
+    )
+    plot_confusion_matrix(
+        confusion_matrix=confusion_matrix,
+        class_names=class_names,
+        save_path=save_plot_confusion_matrix,
+    )
+
+
+
 def _show_or_save(
         fig: Figure,
         save_path: str | Path | None = None,
@@ -318,7 +465,7 @@ def _show_or_save(
     if save_path is not None:
         fig.savefig(save_path, dpi=dpi, bbox_inches="tight")
         plt.close(fig)
-        logger.info("Figure saved")
+        logger.info(f"Figure saved to {save_path}")
     else:
         logger.info("Displaying figure")
         plt.show()
