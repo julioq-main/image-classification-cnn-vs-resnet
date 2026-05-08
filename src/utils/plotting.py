@@ -324,18 +324,56 @@ def plot_train(
         save_dir: str | Path | None = None,
     ) -> None:
     """
-    _summary_
+    Orchestrate all training-diagnostic plots for a completed training run.
+
+    Always produces loss, accuracy, and combined training-curve plots.
+    If ``cfg["advanced_metrics"]`` is ``True``, also plots macro-averaged
+    precision/recall/F1 over epochs and the confusion matrix for the final
+    epoch.
 
     Parameters
     ----------
     history : dict
-        _description_
-    cfg : dict | None, optional
-        _description_, by default None
-    class_names : list[str] | None, optional
-        _description_, by default None
-    save_dir : str | Path | None, optional
-        _description_, by default None
+        Training history produced by the training loop. Expected keys are:
+
+        - ``epoch``: list of int
+            Epoch numbers corresponding to each entry.
+        - ``train_loss`` : list of float
+            Average training loss across all samples for each epoch.
+        - ``train_accuracy`` : list of float
+            Average training accuracy across all samples for each epoch.
+        - ``val_loss`` : list of float
+            Average validation loss across all samples for each epoch.
+        - ``val_accuracy`` : list of float
+            Average validation accuracy across all samples for each epoch.
+
+        When advanced metrics are enabled the following additional keys are
+        required:
+        
+        - ``macro_precision`` : list of float
+            Macro-averaged precision across all classes for each epoch.
+        - ``macro_recall`` : list of float
+            Macro-averaged recall across all classes for each epoch.
+        - ``macro_f1`` : list of float
+            Macro-averaged F1-score across all classes for each epoch.
+        - ``confusion_matrix`` : np.ndarray or list of list of int
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number
+            of classes. One matrix per epoch, only the last one is used.
+    cfg : dict or None, optional
+        Configuration dictionary.  When not ``None`` and
+        ``cfg["advanced_metrics"]`` evaluates to ``True``, macro-level and
+        confusion-matrix plots are generated in addition to the standard
+        curves
+    class_names : list of str or None, optional
+        Labels for each class forwarded to the confusion matrix plot, used
+        as tick labels on both axes. If ``None``, integer indices are used.
+    save_dir : str or Path or None, optional
+        Directory where all figures will be saved. The directory is created
+        if it does not exist.  Each plot is written to a fixed filename inside
+        this directory (``loss_curve``, ``accuracy_curve``,
+        ``training_curves``, ``macro_advanced_metrics``,
+        ``confusion_matrix``).  If ``None``, every figure is displayed
+        interactively and nothing is written to disk.
     """
     logger.info("Plotting training metrics")
 
@@ -410,7 +448,35 @@ def plot_test(
         class_names: list[str] | None = None,
         save_dir: str | Path | None = None,
 ) -> None:
-    
+    """
+    Orchestrate all test-diagnostic plots for a completed evaluation run.
+
+    Produces a per-class metrics bar chart (precision, recall, F1) and a
+    confusion matrix, both derived from a single-epoch test result.
+
+    Parameters
+    ----------
+    test_metrics : dict
+        Metrics produced by the test loop. Expected keys are:
+
+        - ``class_precision`` : list of float
+            Per-class precision score.
+        - ``class_recall`` : list of float
+            Per-class recall score.
+        - ``class_f1`` : list of float
+            Per-class f1 score.
+        - ``confusion_matrix`` : np.ndarray
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number
+            of classes.
+    class_names : list of str or None, optional
+        Labels for each class forwarded to both plots, used as tick labels
+        on both axes. If ``None``, integer indices are used.
+    save_dir : str or Path or None, optional
+        Directory where all figures will be saved. The directory is created
+        if it does not exist.  Each plot is written to a fixed filename inside
+        this directory (``class_metrics``, ``confusion_matrix``). If ``None``,
+        every figure is displayed interactively and nothing is written to disk.
+    """
     logger.info("Plotting training metrics")
 
     if save_dir is not None:
