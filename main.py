@@ -6,7 +6,6 @@ import logging
 from pathlib import Path
 
 from training import run_training, run_test
-from models import get_model
 from utils.seed import set_seed
 from utils.logger import set_logger
 from utils.plotting import plot_test, plot_train
@@ -123,6 +122,8 @@ def main():
         if train_plot_cfg and train_plot_cfg.get("enabled", False):
             if save_dir is not None:
                 save_plot_dir = Path(save_dir) / "visualisation" / "train"
+            else:
+                save_plot_dir = None
                 
             plot_train(
                 history,
@@ -136,14 +137,15 @@ def main():
         if test_plot_cfg and test_plot_cfg.get("enabled", False):
             if save_dir is not None:
                 save_plot_dir = Path(save_dir) / "visualisation" / "test"
-            
+            else:
+                save_plot_dir = None
+                
             plot_test(
                 test_metrics,
                 class_names=class_names,
                 save_dir=save_plot_dir,
             )
     
-
 
 if __name__ == "__main__":
     main()
