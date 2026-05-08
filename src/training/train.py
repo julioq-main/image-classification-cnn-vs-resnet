@@ -114,7 +114,7 @@ def run_training(
             Macro-averaged recall across all classes for each epoch.
         - ``macro_f1`` : list of float
             Macro-averaged F1-score across all classes for each epoch.
-        - ``confusion_matrix`` : list of list of int
+        - ``confusion_matrix`` : np.ndarray
             Confusion matrix of shape ``(C, C)``, where ``C`` is the number of
             classes. One matrix per epoch.
     class_names: list of str

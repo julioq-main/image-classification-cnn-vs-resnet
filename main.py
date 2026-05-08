@@ -1,5 +1,4 @@
 """
-TODO add plotting functions and logic
 """
 import yaml
 import argparse
@@ -19,7 +18,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         prog="main.py",
         description="Training and benchmarking models",
-        )
+    )
     parser.add_argument(
         "--config",
         "-cfg",

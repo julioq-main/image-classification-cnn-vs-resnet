@@ -32,7 +32,8 @@ def compute_advanced_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict
         - ``macro_f1`` : float
             Macro-averaged F1-score across all classes.
         - ``confusion_matrix`` : np.ndarray
-            Confusion matrix of shape ``(C, C)``, where ``C`` is the number of classes.
+            Confusion matrix of shape ``(C, C)``, where ``C`` is the number
+            of classes.
 
     Raises
     ------
@@ -59,8 +60,9 @@ def compute_advanced_metrics(targets: torch.Tensor, preds: torch.Tensor) -> dict
     """
     # Shape check
     if targets.shape != preds.shape:
-        msg = f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}"
-        raise ValueError(msg)
+        raise ValueError(
+            f"Predictions(preds) and Targets(targets) shapes do not match: {targets.shape} vs {preds.shape}"
+        )
 
     #Convert tensors to NumPy arrays for sklearn
     targets = targets.cpu().numpy()
