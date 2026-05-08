@@ -507,7 +507,6 @@ def plot_test(
     )
 
 
-
 def _show_or_save(
         fig: Figure,
         save_path: str | Path | None = None,
