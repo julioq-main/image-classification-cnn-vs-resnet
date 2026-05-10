@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 batch_size=32
 
 norm_dataset = datasets.ImageFolder(
-    root="image-classification-cnn-vs-resnet/data/processed/train",
+    root="image-classification-cnn-vs-resnet/data/architectural_styles/processed/train",
     transform=transforms.Compose([
         transforms.Resize(256),
         transforms.CenterCrop(224),

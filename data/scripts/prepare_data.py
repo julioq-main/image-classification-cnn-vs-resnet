@@ -2,8 +2,8 @@
 import splitfolders
 
 #Set path to get data and to output it
-input_path = "image-classification-cnn-vs-resnet/data/raw"
-output_name = "image-classification-cnn-vs-resnet/data/processed"
+input_path = "image-classification-cnn-vs-resnet/data/architectural_styles/raw"
+output_name = "image-classification-cnn-vs-resnet/data/architectural_styles/processed"
 
 #split all categories folders into train, val and test folders 
 splitfolders.ratio(
