@@ -78,3 +78,88 @@ def get_optim(cfg: dict, model: nn.Module) -> optim.Optimizer:
             )
         
     return optimizer
+
+def get_scheduler(
+        cfg: dict | None,
+        optimizer: optim.Optimizer,
+    ) -> optim.lr_scheduler.LRScheduler | None:
+    """
+    Build and return a learning rate scheduler configured from a dictionary.
+
+    Parameters
+    ----------
+    cfg : dict or None
+        Scheduler configuration. If ``None``, no scheduler is applied and
+        the function returns ``None``. Expected keys:
+
+        - ``name`` : str
+            Scheduler name. Supported values are ``step`` and ``cosine``.
+
+        For ``step``:
+
+        - ``step_size`` : int
+            Number of epochs between each learning rate decay step.
+        - ``gamma`` : float, default=0.1
+            Multiplicative factor applied to the learning rate at each step.
+
+        For ``cosine``:
+
+        - ``T_max`` : int
+            Number of epochs for one cosine annealing cycle. Typically set
+            to the total number of training epochs.
+        - ``eta_min`` : float, default=0
+            Minimum learning rate at the end of the cycle.
+
+    optimizer : optim.Optimizer
+        Optimizer whose learning rate will be scheduled. Must be fully
+        configured before being passed to this function.
+
+    Returns
+    -------
+    optim.lr_scheduler.LRScheduler or None
+        Configured scheduler instance, or ``None`` if ``cfg`` is ``None``.
+
+    Raises
+    ------
+    ValueError
+        If ``name`` is not one of the supported scheduler names.
+
+    Examples
+    --------
+    >>> scheduler = get_scheduler({"name": "cosine", "T_max": 50}, optimizer)
+    >>> scheduler = get_scheduler({"name": "step", "step_size": 10}, optimizer)
+    >>> scheduler = get_scheduler(None, optimizer)  # no scheduling
+    """
+    if cfg is None:
+        return None
+    
+    name = cfg["name"]
+
+    match name:
+        case "step":
+            step_size = cfg["step_size"]
+            gamma = cfg.get("gamma", 0.1)
+            
+            lr_scheduler = optim.lr_scheduler.StepLR(
+                optimizer=optimizer,
+                step_size=step_size,
+                gamma=gamma,
+                )
+            
+        case "cosine":
+            T_max = cfg["T_max"]
+            eta_min=cfg.get("eta_min", 0)
+
+            lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(
+                optimizer=optimizer,
+                T_max=T_max,
+                eta_min=eta_min,
+            )
+        
+        case _:
+            raise ValueError(
+                f"Unknown LR Scheduler: '{name}'. "
+                f"Schedulers available: ['step', 'cosine']"
+            )
+        
+    return lr_scheduler
