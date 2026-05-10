@@ -22,7 +22,7 @@
 
 ## About
 
-A PyTorch framework for training and benchmarking image classification models. Supports multiple architectures, configurable training pipelines, and automatic metric logging and visualization — all driven by a single YAML config file. For more information about the proccess of making the project and technical details check `doc/design.md` (to be added).
+A PyTorch framework for training and benchmarking image classification models. Supports multiple architectures, configurable training pipelines, and automatic metric logging and visualization — all driven by a single YAML config file. For more information about the proccess of making the project and technical details check `doc/design.md`.
 
 ### Project Structure
 
@@ -228,4 +228,4 @@ After a run, `save_dir` contains:
 
 ## Experiments
  
-See `doc/experiments.md`(to be added) for a log of all runs with notes on configurations and results.
+See `doc/experiments.md` for a log of all runs with notes on configurations and results.
