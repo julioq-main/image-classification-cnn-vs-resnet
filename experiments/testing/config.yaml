@@ -23,8 +23,9 @@ data:
      p: 0.5
 
 model: 
- name: "resnet"
+ name: "resnet50"
  num_classes: 25
+ pretrained: true
 
 train:
  checkpoint_interval: 10

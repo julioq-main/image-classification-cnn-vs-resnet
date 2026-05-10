@@ -1,19 +1,5 @@
 """
 """
-from models.architectures import MyResNet18
+from models.architectures import get_model
 
-
-def get_model(cfg):
-    
-    name = cfg["name"]
-    num_classes = cfg["num_classes"]
-
-    # --- Model ---
-    match name:
-        case "resnet":
-            model = MyResNet18(num_classes)
-        #TODO add other models
-        case _:
-            raise ValueError(f"Unknown model: '{name}'")
-        
-    return model
+__all__ = ["get_model"]
