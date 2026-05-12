@@ -9,13 +9,14 @@ import json
 import logging
 from pathlib import Path
 from copy import deepcopy
+import time
 
 import torch
 import torch.nn as nn
 
 from models import get_model
 from utils.data import get_dataloader
-from utils.optim import get_optim
+from utils.optim import get_optim, get_scheduler
 from utils.metrics import compute_advanced_metrics
 from engine import train_one_epoch, eval_one_epoch
 
@@ -51,7 +52,7 @@ def run_training(
         - ``data`` : dict
             Passed directly to ``get_dataloader``. Must contain dataset paths,
             normalization stats, and loader settings.
-        - ``training`` : dict
+        - ``train`` : dict
             Training settings. Expected keys:
 
             - ``checkpoint_interval`` : int
@@ -96,6 +97,8 @@ def run_training(
 
         - ``epoch``: list of int
             Epoch numbers corresponding to each entry.
+        - ``duration``: list of float
+            Duration of each epoch measured in seconds.
         - ``train_loss`` : list of float
             Average training loss across all samples for each epoch.
         - ``train_accuracy`` : list of float
@@ -161,12 +164,17 @@ def run_training(
     model = get_model(cfg["model"]).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = get_optim(cfg["train"]["optimizer"], model)
+    scheduler = get_scheduler(
+        cfg["train"]["optimizer"].get("scheduler", None),
+        optimizer=optimizer,
+    )
     loaders = get_dataloader(cfg["data"], cfg.get("seed", None))
     class_names = loaders["train_loader"].dataset.classes
 
     use_advanced_metrics = cfg["train"].get("advanced_metrics", False)
     history = {
         "epoch": [],
+        "duration": [],
         "train_loss": [],
         "train_accuracy": [],
         "val_loss": [],
@@ -181,6 +189,14 @@ def run_training(
             "confusion_matrix": [],
         })
 
+    best_model = deepcopy(model.state_dict())
+    patience = cfg["train"].get("patience", None)
+    patience_counter = 0
+    checkpoint_interval = cfg["train"].get("checkpoint_interval", 10)
+    loss_goal = cfg["train"].get("loss_goal", None)
+    start_epoch = 0
+    best_val_loss = float("inf")
+
     #Resume from checkpoint if provided
     if checkpoint_path is not None:
         checkpoint = torch.load(
@@ -190,12 +206,22 @@ def run_training(
         )
         model.load_state_dict(checkpoint["model_state_dict"])
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
+        if scheduler is not None:
+            if "scheduler_state_dict" in checkpoint:
+                scheduler.load_state_dict(checkpoint["scheduler_state_dict"])
+            else:
+                logger.warning(
+                    "LR Scheduler is configured but no 'scheduler_state_dict' "
+                    "found in checkpoint. Scheduler will start from scratch."
+                )
+                
         start_epoch = checkpoint["epoch"]
         best_val_loss = checkpoint["val_loss"]
+        patience_counter = checkpoint["patience_counter"]
         
         logger.info(
-            f"Resuming from checkpoint at epoch {start_epoch}, "
-            f"val_loss {best_val_loss:.4f}"
+            f"Resuming from checkpoint at epoch {start_epoch}, next epoch "
+            f"will be {start_epoch+1} with val_loss {best_val_loss:.4f}."
         )
 
         if history_path is not None:
@@ -216,21 +242,11 @@ def run_training(
             logger.info(
                 f"No history_path given. History will start at epoch {start_epoch+1}"
                 )        
-    else:
-        start_epoch = 0
-        best_val_loss = float("inf")
-
-        if history_path is not None:
-            logger.warning(
-            "history_path provided but no checkpoint_path given. "
-            "history_path will be ignored."
-            )
-
-    best_model = deepcopy(model.state_dict())
-    patience = cfg["train"].get("patience", None)
-    patience_counter = 0
-    checkpoint_interval = cfg["train"].get("checkpoint_interval", 10)
-    loss_goal = cfg["train"].get("loss_goal", None)
+    elif history_path is not None:
+        logger.warning(
+        "history_path provided but no checkpoint_path given. "
+        "history_path will be ignored."
+        )
     
     save_dir = cfg.get("save_dir", None)
     if save_dir is not None:
@@ -242,6 +258,8 @@ def run_training(
         logger.info("Saving to disk is not active")
 
     for epoch in range(start_epoch, epochs):
+        start_time = time.time()
+        
         model.train()
         train_metrics = train_one_epoch(
             loaders["train_loader"],
@@ -254,7 +272,13 @@ def run_training(
         with torch.no_grad():
             val_metrics = eval_one_epoch(loaders["val_loader"], model, criterion, device)
         
+        if scheduler is not None:
+            scheduler.step()
+
+        duration = time.time() - start_time
+
         history["epoch"].append(epoch+1)
+        history["duration"].append(duration)
         history["train_loss"].append(train_metrics["loss"])
         history["train_accuracy"].append(train_metrics["accuracy"])
         history["val_loss"].append(val_metrics["loss"])
@@ -286,12 +310,17 @@ def run_training(
 
         if save_dir is not None and (epoch+1) % checkpoint_interval == 0:
             save_checkpoint_path = save_checkpoint_dir / f"checkpoint_epoch_{epoch+1}"
-            torch.save({
+            checkpoint_data = {
                 "epoch": epoch + 1,
                 "model_state_dict": model.state_dict(),
                 "optimizer_state_dict": optimizer.state_dict(),
                 "val_loss": val_metrics["loss"],
-            }, save_checkpoint_path)
+                "patience_counter": patience_counter,
+            }
+            if scheduler is not None:
+                checkpoint_data["scheduler_state_dict"] = scheduler.state_dict()
+
+            torch.save(checkpoint_data, save_checkpoint_path)
             
             logger.info(f"Checkpoint saved at epoch {epoch+1}")
 
@@ -301,12 +330,18 @@ def run_training(
             
             if save_dir is not None:
                 save_best_path = save_checkpoint_dir / "best_model.pth"
-                torch.save({
+                
+                checkpoint_data = {
                     "epoch": epoch + 1,
                     "model_state_dict": model.state_dict(),
                     "optimizer_state_dict": optimizer.state_dict(),
                     "val_loss": best_val_loss,
-                }, save_best_path)
+                    "patience_counter": patience_counter,                    
+                }
+                if scheduler is not None:
+                    checkpoint_data["scheduler_state_dict"] = scheduler.state_dict()
+                
+                torch.save(checkpoint_data, save_best_path)
             
             best_model = deepcopy(model.state_dict())
             logger.info(f"Checkpoint saved — val_loss improved to {best_val_loss:.4f}")
