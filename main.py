@@ -1,4 +1,5 @@
 """
+Orchestration layer for training and evaluating image classification models.
 """
 import yaml
 import argparse
@@ -13,7 +14,39 @@ from utils.plotting import plot_test, plot_train
 logger = logging.getLogger(__name__)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
+    """
+    Parse command-line arguments for the training and evaluation pipeline.
+
+    Returns
+    -------
+    args : argparse.Namespace
+        Parsed arguments with the following attributes:
+
+        - ``config`` : str
+            Path to the YAML configuration file. Defaults to
+            ``experiments/testing/config.yaml``.
+        - ``mode`` : str
+            Execution mode. One of ``train`` or ``test``.
+        - ``log_level`` : str or None
+            Logging level (e.g. ``INFO``, ``DEBUG``). If ``None``,
+            falls back to the value in the config file, then to ``INFO``.
+        - ``log_file`` : str or None
+            Path to a log file. If ``None``, falls back to the value in the
+            config file, then logs to stdout only.
+        - ``checkpoint`` : str or None
+            Path to a checkpoint file. Required when ``mode`` is ``test``.
+            Optional when ``mode`` is ``train``; if provided, training
+            resumes from that checkpoint.
+        - ``history`` : str or None
+            Path to a ``history.json`` file from a previous run. Optional;
+            ignored if ``checkpoint`` is ``None``.
+
+    Raises
+    ------
+    SystemExit
+        If ``--mode test`` is passed without ``--checkpoint``.
+    """
     parser = argparse.ArgumentParser(
         prog="main.py",
         description="Training and benchmarking models",
@@ -55,7 +88,7 @@ def parse_args():
         "-ckpt",
         type=str,
         default=None,
-        required=True,
+        required=False,
         help="Path to a checkpoint file to resume training from",
     )
     parser.add_argument(
@@ -75,8 +108,41 @@ def parse_args():
     return args
 
 
-def main():
-    
+def main() -> None:
+    """
+    Entry point for the training and evaluation pipeline.
+
+    Parses command-line arguments, loads the YAML configuration file,
+    initialises the logger and optional random seed, then dispatches to
+    the appropriate pipeline based on the selected mode:
+
+    - ``train`` : Runs the full training loop via ``run_training``, followed
+      by evaluation on the test set via ``run_test``. Training and test
+      plots are generated if enabled in the configuration.
+    - ``test``  : Runs evaluation only via ``run_test`` using a provided
+      checkpoint. Test plots are generated if enabled in the configuration.
+
+    Command-line arguments take precedence over config file values for
+    ``log_level`` and ``log_file``. All other settings are read from the
+    YAML config.
+
+    Examples
+    --------
+    Train from scratch:
+
+    >>> python main.py --config experiments/exp001/config.yaml --mode train
+
+    Resume training from a checkpoint:
+
+    >>> python main.py --config experiments/exp001/config.yaml \\
+    ...     --checkpoint experiments/exp001/checkpoints/best_model.pth \\
+    ...     --history experiments/exp001/history.json
+
+    Evaluate a checkpoint:
+
+    >>> python main.py --mode test \\
+    ...     --checkpoint experiments/exp001/checkpoints/best_model.pth
+    """
     args = parse_args()
 
     with open(args.config, "r") as f:
@@ -102,7 +168,9 @@ def main():
         if cfg["test"].get("plotting", False):
             if save_dir is not None:
                 save_plot_dir = Path(save_dir) / "visualisation" / "test"
-        
+            else:
+                save_plot_dir = None
+
         plot_test(
             test_metrics,
             class_names=class_names,
