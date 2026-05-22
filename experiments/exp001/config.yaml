@@ -1,0 +1,41 @@
+seed: 42
+log_level: "INFO"
+log_file: "experiments/exp001/exp001.log"
+save_dir: "experiments/exp001"
+
+data:
+  train_dir: "data/architectural_styles/processed/train"
+  test_dir: "data/architectural_styles/processed/test"
+  val_dir: "data/architectural_styles/processed/val"
+  mean: [0.4963, 0.4963, 0.4894]
+  std: [0.2304, 0.2314, 0.2542]
+  batch_size: 32
+  num_workers: 4
+  image_size: 224
+  resize_size: 256
+  drop_last: true
+  
+model: 
+  name: "resnet50"
+  num_classes: 25
+  pretrained: false
+
+train:
+  epochs: 50
+  loss_goal: 0.1
+  patience: 10
+  checkpoint_interval: 10
+  optimizer:
+    name: "sgd"
+    lr: 0.001
+    momentum: 0.9
+    
+  advanced_metrics: true
+  plotting:
+    enabled: true
+    advanced_metrics: true
+
+test:
+  advanced_metrics: true
+  plotting:
+    enabled: true
