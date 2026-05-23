@@ -4,40 +4,82 @@ Test vgg16 to see batch size can handle
 
 ## exp001
 No augmentaiton
-Base VGG16
-50 epochs
-sgd
-no scheduler
+VGG16
+50/100? epochs
+AdamW
+cosine
 
 ## exp002
 No augmentaiton
-Base VGG16 from scratch
+VGG16 finetune
 50 epochs
-sgd
-cosine scheduler
+AdamW
+cosine
 
 ## exp003
 No augmentaiton
-Base VGG16 from scratch
+resnet from scratch
 50 epochs
-adam/adamw
+AdamW
+cosine scheduler
 
 ## exp004
-no augmentaiton
-Base VGG16 finetune
+No augmentaiton
+resnet finetune
 50 epochs
-sgd
+AdamW
 cosine scheduler
 
 ## exp005
 No augmentaiton
-Base VGG16 finetune
+EfficientNet from scratch
 50 epochs
-adam/adamw
+AdamW
+cosine scheduler
 
-## exp004
-all augmentaiton
-Base VGG16 finetune
+## exp006
+No augmentaiton
+EfficientNet finetune
 50 epochs
-best sgd/adam/adamw
-cosine scheduler?
+AdamW
+cosine scheduler
+
+## exp007
+no augmentaiton
+ConvNext from scratch
+50 epochs
+AdamW
+cosine scheduler
+
+
+## exp008
+no augmentaiton
+ConvNext finetune
+50 epochs
+AdamW
+cosine scheduler
+
+
+## exp009
+augmentaiton
+best finetune
+50 epochs
+AdamW
+cosine scheduler
+
+
+
+## exp010
+no augmentaiton
+resnet finetuned
+50 epochs
+SGD + momentum
+cosine scheduler
+
+
+## exp011
+no augmentaiton
+resnet finetuned
+50 epochs
+AdamW
+No scheduler

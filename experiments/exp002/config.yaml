@@ -1,7 +1,7 @@
 seed: 42
 log_level: "INFO"
-log_file: "experiments/exp001/exp001.log"
-save_dir: "experiments/exp001"
+log_file: "experiments/exp002/exp002.log"
+save_dir: "experiments/exp002"
 
 data:
   train_dir: "data/architectural_styles/processed/train"
@@ -18,7 +18,7 @@ data:
 model: 
   name: "vgg16"
   num_classes: 25
-  pretrained: false
+  pretrained: true
 
 train:
   epochs: 50
