@@ -25,7 +25,7 @@ def set_seed(seed: int) -> None:
     -----
     Enables deterministic algorithm mode in PyTorch via
     ``torch.use_deterministic_algorithms(True)``, which raises a
-    ``RuntimeError`` at runtime if a non-deterministic operation is
+    warning at runtime if a non-deterministic operation is
     encountered. This may reduce performance due to the disabling of
     non-deterministic CUDA algorithms and cuDNN auto-tuning.
 
@@ -51,7 +51,7 @@ def set_seed(seed: int) -> None:
 
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True  # legacy compatibility
-    torch.use_deterministic_algorithms(True)
+    torch.use_deterministic_algorithms(True, warn_only=True)
 
     logger.info(f"Seed set to {seed}")
 
