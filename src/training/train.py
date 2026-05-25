@@ -1,9 +1,5 @@
 """
 Training pipeline for image classification models.
-
-This module exposes a single entry point, `run_training`, which takes a
-configuration dictionary and executes a full training loop with optional
-checkpointing, early stopping, and advanced evaluation metrics.
 """
 import json
 import logging
@@ -33,8 +29,8 @@ def run_training(
 
     Trains a model for a fixed number of epochs with optional early stopping,
     loss-goal termination, and best-model checkpointing. If a save directory
-    is provided, the best checkpoint and training history are persisted to
-    disk; otherwise the best model weights are kept in memory.
+    is provided, the best checkpoint and training history are saved to disk;
+    otherwise the best model weights are only returned.
 
     Parameters
     ----------
@@ -132,8 +128,7 @@ def run_training(
     is saved to ``<save_dir>/checkpoints/checkpoint_epoch_{epoch}``, the best
     checkpoint is saved to ``<save_dir>/checkpoints/best_model.pth`` and the
     final model weights to ``<save_dir>/checkpoints/last_model.pth``. Training
-    history is written to ``<save_dir>/history.json``. Non-serializable values
-    (e.g. tensors) are converted via ``.tolist()`` automatically.
+    history is written to ``<save_dir>/history.json``.
 
     If ``history_path`` is provided, the loaded history keys must match those
     of the current run. If they differ (e.g. ``advanced_metrics`` was toggled

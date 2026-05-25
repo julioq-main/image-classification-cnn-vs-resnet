@@ -324,7 +324,7 @@ def plot_train(
         save_dir: str | Path | None = None,
     ) -> None:
     """
-    Orchestrate all training-diagnostic plots for a completed training run.
+    Orchestrate all training plots for a completed training run.
 
     Always produces loss, accuracy, and combined training-curve plots.
     If ``cfg["advanced_metrics"]`` is ``True``, also plots macro-averaged
@@ -449,10 +449,10 @@ def plot_test(
         save_dir: str | Path | None = None,
 ) -> None:
     """
-    Orchestrate all test-diagnostic plots for a completed evaluation run.
+    Orchestrate all test plots for a completed evaluation run.
 
     Produces a per-class metrics bar chart (precision, recall, F1) and a
-    confusion matrix, both derived from a single-epoch test result.
+    confusion matrix.
 
     Parameters
     ----------

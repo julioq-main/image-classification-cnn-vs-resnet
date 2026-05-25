@@ -40,8 +40,7 @@ def build_transforms(
     std : list float
         Per-channel standard deviation values used for normalization.
     image_size : int
-        Final crop size passed to ``CenterCrop`` in the val/test pipeline
-        and used as the target size in augmentations that require it.
+        Final crop size passed to ``CenterCrop`` in the val/test pipeline.
     resize_size : int
         Size passed to ``Resize`` before center-cropping in the val/test pipeline.
     augmentations : list of dict, optional
@@ -62,9 +61,10 @@ def build_transforms(
 
     Notes
     -----
-    The val/test pipeline applies a fixed Resize → CenterCrop sequence to ensure
-    consistent input geometry during evaluation. The train pipeline omits this
-    to allow augmentations such as ``RandomResizedCrop`` to control the crop.
+    The val/test pipeline applies a fixed Resize -> CenterCrop sequence to ensure
+    consistent input during evaluation. The train pipeline omits this to allow
+    augmentations such as ``RandomResizedCrop`` to control the crop. If no 
+    augmentation is provided, it will have the same pipeline as val/test.
 
     Examples
     --------

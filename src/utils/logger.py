@@ -55,7 +55,7 @@ def set_logger(log_level: str, log_file: str | None = None) -> None:
         Path(log_file).parent.mkdir(parents=True, exist_ok=True)
         handlers.append(logging.FileHandler(log_file, encoding="utf-8", mode="w"))
 
-    # Remove existing handlers to ensure the call is never silently ignored
+    # Remove existing handlers
     root = logging.getLogger()
     for handler in root.handlers[:]:
         root.removeHandler(handler)
