@@ -1,0 +1,75 @@
+2026-05-25 17:32:51 | INFO  | utils.seed | Seed set to 42
+2026-05-25 17:32:51 | INFO  | training.train | Starting training
+2026-05-25 17:32:51 | INFO  | training.train | Using device: cuda
+2026-05-25 17:32:52 | INFO  | models.architectures | Model convnext_tiny with 25 classes created succesfully.
+2026-05-25 17:32:52 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
+2026-05-25 17:32:52 | INFO  | training.train | Advanced metrics are active
+2026-05-25 17:32:52 | INFO  | training.train | Saving to disk is active
+2026-05-25 17:33:44 | INFO  | training.train | Epoch [1/50]  Train — loss: 3.0617  acc: 0.1234  |  Val — loss: 2.9605  acc: 0.1285
+2026-05-25 17:33:44 | INFO  | training.train | Epoch [1/50]  Adv — precision: 0.0556  recall: 0.0970  f1: 0.0620
+2026-05-25 17:33:45 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.9605
+2026-05-25 17:34:29 | INFO  | training.train | Epoch [2/50]  Train — loss: 2.8583  acc: 0.1749  |  Val — loss: 2.8765  acc: 0.1713
+2026-05-25 17:34:29 | INFO  | training.train | Epoch [2/50]  Adv — precision: 0.0780  recall: 0.1080  f1: 0.0772
+2026-05-25 17:34:30 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.8765
+2026-05-25 17:35:14 | INFO  | training.train | Epoch [3/50]  Train — loss: 2.6948  acc: 0.2039  |  Val — loss: 2.7295  acc: 0.2184
+2026-05-25 17:35:14 | INFO  | training.train | Epoch [3/50]  Adv — precision: 0.1041  recall: 0.1527  f1: 0.1149
+2026-05-25 17:35:15 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.7295
+2026-05-25 17:35:59 | INFO  | training.train | Epoch [4/50]  Train — loss: 2.5322  acc: 0.2492  |  Val — loss: 2.6637  acc: 0.2034
+2026-05-25 17:35:59 | INFO  | training.train | Epoch [4/50]  Adv — precision: 0.1160  recall: 0.1373  f1: 0.1125
+2026-05-25 17:36:00 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.6637
+2026-05-25 17:36:45 | INFO  | training.train | Epoch [5/50]  Train — loss: 2.3767  acc: 0.2899  |  Val — loss: 2.6584  acc: 0.2227
+2026-05-25 17:36:45 | INFO  | training.train | Epoch [5/50]  Adv — precision: 0.1836  recall: 0.1790  f1: 0.1526
+2026-05-25 17:36:46 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.6584
+2026-05-25 17:37:30 | INFO  | training.train | Epoch [6/50]  Train — loss: 2.1909  acc: 0.3365  |  Val — loss: 2.6419  acc: 0.2248
+2026-05-25 17:37:30 | INFO  | training.train | Epoch [6/50]  Adv — precision: 0.1446  recall: 0.1709  f1: 0.1470
+2026-05-25 17:37:31 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.6419
+2026-05-25 17:38:15 | INFO  | training.train | Epoch [7/50]  Train — loss: 2.0360  acc: 0.3882  |  Val — loss: 2.6304  acc: 0.2505
+2026-05-25 17:38:15 | INFO  | training.train | Epoch [7/50]  Adv — precision: 0.1755  recall: 0.1866  f1: 0.1687
+2026-05-25 17:38:16 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.6304
+2026-05-25 17:39:01 | INFO  | training.train | Epoch [8/50]  Train — loss: 1.8447  acc: 0.4463  |  Val — loss: 2.6575  acc: 0.2741
+2026-05-25 17:39:01 | INFO  | training.train | Epoch [8/50]  Adv — precision: 0.2298  recall: 0.2313  f1: 0.2196
+2026-05-25 17:39:46 | INFO  | training.train | Epoch [9/50]  Train — loss: 1.6686  acc: 0.4941  |  Val — loss: 2.7310  acc: 0.2677
+2026-05-25 17:39:46 | INFO  | training.train | Epoch [9/50]  Adv — precision: 0.1838  recall: 0.2118  f1: 0.1833
+2026-05-25 17:40:30 | INFO  | training.train | Epoch [10/50]  Train — loss: 1.4680  acc: 0.5597  |  Val — loss: 2.8064  acc: 0.2827
+2026-05-25 17:40:30 | INFO  | training.train | Epoch [10/50]  Adv — precision: 0.2286  recall: 0.2275  f1: 0.2161
+2026-05-25 17:40:31 | INFO  | training.train | Checkpoint saved at epoch 10
+2026-05-25 17:41:16 | INFO  | training.train | Epoch [11/50]  Train — loss: 1.2401  acc: 0.6342  |  Val — loss: 2.8370  acc: 0.2612
+2026-05-25 17:41:16 | INFO  | training.train | Epoch [11/50]  Adv — precision: 0.2096  recall: 0.2136  f1: 0.2052
+2026-05-25 17:42:00 | INFO  | training.train | Epoch [12/50]  Train — loss: 1.0260  acc: 0.6980  |  Val — loss: 2.8920  acc: 0.2784
+2026-05-25 17:42:00 | INFO  | training.train | Epoch [12/50]  Adv — precision: 0.2598  recall: 0.2229  f1: 0.2199
+2026-05-25 17:42:45 | INFO  | training.train | Epoch [13/50]  Train — loss: 0.7945  acc: 0.7705  |  Val — loss: 3.0053  acc: 0.2805
+2026-05-25 17:42:45 | INFO  | training.train | Epoch [13/50]  Adv — precision: 0.2194  recall: 0.2313  f1: 0.2203
+2026-05-25 17:43:29 | INFO  | training.train | Epoch [14/50]  Train — loss: 0.5891  acc: 0.8468  |  Val — loss: 3.2270  acc: 0.2548
+2026-05-25 17:43:29 | INFO  | training.train | Epoch [14/50]  Adv — precision: 0.2078  recall: 0.2189  f1: 0.2072
+2026-05-25 17:44:14 | INFO  | training.train | Epoch [15/50]  Train — loss: 0.4033  acc: 0.9101  |  Val — loss: 3.2871  acc: 0.2548
+2026-05-25 17:44:14 | INFO  | training.train | Epoch [15/50]  Adv — precision: 0.2049  recall: 0.2113  f1: 0.2033
+2026-05-25 17:44:59 | INFO  | training.train | Epoch [16/50]  Train — loss: 0.2669  acc: 0.9485  |  Val — loss: 3.3848  acc: 0.2827
+2026-05-25 17:44:59 | INFO  | training.train | Epoch [16/50]  Adv — precision: 0.2245  recall: 0.2245  f1: 0.2191
+2026-05-25 17:45:43 | INFO  | training.train | Epoch [17/50]  Train — loss: 0.1637  acc: 0.9780  |  Val — loss: 3.6523  acc: 0.2612
+2026-05-25 17:45:43 | INFO  | training.train | Epoch [17/50]  Adv — precision: 0.1987  recall: 0.2127  f1: 0.2006
+2026-05-25 17:45:43 | INFO  | training.train | Early stopping at epoch 17 — no improvement for 10 epochs
+2026-05-25 17:45:44 | INFO  | training.train | Last model and history saved to experiments/exp007/checkpoints
+2026-05-25 17:45:44 | INFO  | training.train | Training complete
+2026-05-25 17:45:44 | INFO  | utils.plotting | Plotting training metrics
+2026-05-25 17:45:44 | INFO  | utils.plotting | Plotting training loss
+2026-05-25 17:45:44 | INFO  | utils.plotting | Plotting validation loss
+2026-05-25 17:45:44 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/train/loss_curve
+2026-05-25 17:45:44 | INFO  | utils.plotting | Plotting training accuracy
+2026-05-25 17:45:44 | INFO  | utils.plotting | Plotting validation accuracy
+2026-05-25 17:45:45 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/train/accuracy_curve
+2026-05-25 17:45:45 | INFO  | utils.plotting | Plotting training curves
+2026-05-25 17:45:45 | INFO  | utils.plotting | Plotting validation curves
+2026-05-25 17:45:45 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/train/training_curves
+2026-05-25 17:45:45 | INFO  | utils.plotting | Plotting advanced training metrics is active
+2026-05-25 17:45:45 | INFO  | utils.plotting | Plotting macro averaged advanced metrics (precision, recall and F1)
+2026-05-25 17:45:46 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/train/macro_advanced_metrics
+2026-05-25 17:45:46 | INFO  | utils.plotting | Plotting confusion matrix
+2026-05-25 17:45:47 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/train/confusion_matrix
+2026-05-25 17:45:47 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
+2026-05-25 17:45:51 | INFO  | training.test | Advanced metrics are active
+2026-05-25 17:45:51 | INFO  | training.test | Test metrics saved to experiments/exp007
+2026-05-25 17:45:51 | INFO  | utils.plotting | Plotting training metrics
+2026-05-25 17:45:51 | INFO  | utils.plotting | Plotting per class advanced metrics (precision, recall and F1)
+2026-05-25 17:45:52 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/test/class_metrics
+2026-05-25 17:45:52 | INFO  | utils.plotting | Plotting confusion matrix
+2026-05-25 17:45:54 | INFO  | utils.plotting | Figure saved to experiments/exp007/visualisation/test/confusion_matrix
