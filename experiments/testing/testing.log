@@ -1,9 +1,38 @@
-2026-05-07 19:52:20 | INFO  | utils.seed | Seed set to 42
-2026-05-07 19:52:20 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
-2026-05-07 19:52:28 | INFO  | training.test | Advanced metrics are active
-2026-05-07 19:52:28 | INFO  | training.test | Test metrics saved to experiments/testing
-2026-05-07 19:52:28 | INFO  | utils.plotting | Plotting training metrics
-2026-05-07 19:52:28 | INFO  | utils.plotting | Plotting per class advanced metrics (precision, recall and F1)
-2026-05-07 19:52:30 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/test/class_metrics
-2026-05-07 19:52:30 | INFO  | utils.plotting | Plotting confusion matrix
-2026-05-07 19:52:32 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/test/confusion_matrix
+2026-05-26 21:18:59 | INFO  | utils.seed | Seed set to 42
+2026-05-26 21:18:59 | INFO  | training.train | Starting training
+2026-05-26 21:18:59 | INFO  | training.train | Using device: cuda
+2026-05-26 21:18:59 | INFO  | models.architectures | Model resnet50 with 25 classes created succesfully.
+2026-05-26 21:19:00 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
+2026-05-26 21:19:00 | INFO  | training.train | Advanced metrics are active
+2026-05-26 21:19:00 | INFO  | training.train | Saving to disk is active
+2026-05-26 21:19:30 | INFO  | training.train | Epoch [1/2]  Train — loss: 2.9114  acc: 0.1966  |  Val — loss: 2.5641  acc: 0.3084
+2026-05-26 21:19:30 | INFO  | training.train | Epoch [1/2]  Adv — precision: 0.2600  recall: 0.1796  f1: 0.1462
+2026-05-26 21:19:31 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.5641
+2026-05-26 21:19:56 | INFO  | training.train | Epoch [2/2]  Train — loss: 2.4433  acc: 0.3451  |  Val — loss: 2.2264  acc: 0.3876
+2026-05-26 21:19:56 | INFO  | training.train | Epoch [2/2]  Adv — precision: 0.3167  recall: 0.2493  f1: 0.2227
+2026-05-26 21:19:56 | INFO  | training.train | Checkpoint saved — val_loss improved to 2.2264
+2026-05-26 21:19:57 | INFO  | training.train | Last model and history saved to experiments/testing/checkpoints
+2026-05-26 21:19:57 | INFO  | training.train | Training complete
+2026-05-26 21:19:57 | INFO  | utils.plotting | Plotting training metrics
+2026-05-26 21:19:57 | INFO  | utils.plotting | Plotting training loss
+2026-05-26 21:19:57 | INFO  | utils.plotting | Plotting validation loss
+2026-05-26 21:19:57 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/train/loss_curve
+2026-05-26 21:19:57 | INFO  | utils.plotting | Plotting training accuracy
+2026-05-26 21:19:57 | INFO  | utils.plotting | Plotting validation accuracy
+2026-05-26 21:19:58 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/train/accuracy_curve
+2026-05-26 21:19:58 | INFO  | utils.plotting | Plotting training curves
+2026-05-26 21:19:58 | INFO  | utils.plotting | Plotting validation curves
+2026-05-26 21:19:58 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/train/training_curves
+2026-05-26 21:19:58 | INFO  | utils.plotting | Plotting advanced training metrics is active
+2026-05-26 21:19:58 | INFO  | utils.plotting | Plotting macro averaged advanced metrics (precision, recall and F1)
+2026-05-26 21:19:59 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/train/macro_advanced_metrics
+2026-05-26 21:19:59 | INFO  | utils.plotting | Plotting confusion matrix
+2026-05-26 21:20:01 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/train/confusion_matrix
+2026-05-26 21:20:01 | INFO  | utils.data | Dataloaders ready — train: 3825 samples, val: 467 samples, test: 502 samples
+2026-05-26 21:20:04 | INFO  | training.test | Advanced metrics are active
+2026-05-26 21:20:04 | INFO  | training.test | Test metrics saved to experiments/testing
+2026-05-26 21:20:04 | INFO  | utils.plotting | Plotting training metrics
+2026-05-26 21:20:04 | INFO  | utils.plotting | Plotting per class advanced metrics (precision, recall and F1)
+2026-05-26 21:20:05 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/test/class_metrics
+2026-05-26 21:20:05 | INFO  | utils.plotting | Plotting confusion matrix
+2026-05-26 21:20:07 | INFO  | utils.plotting | Figure saved to experiments/testing/visualisation/test/confusion_matrix

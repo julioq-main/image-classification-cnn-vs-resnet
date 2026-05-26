@@ -38,7 +38,7 @@ train:
     momentum: 0.9
     scheduler:
       name: cosine
-      T_max: 50 
+      T_max: 2
   advanced_metrics: true
   plotting:
     enabled: true

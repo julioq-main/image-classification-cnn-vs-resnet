@@ -227,5 +227,10 @@ After a run, `save_dir` contains:
 --- 
 
 ## Experiments
- 
+
+In addition to the pipeline, a set of experiments has been run. These consist of
+a comparison between different architectures that appeared through time — VGG16
+(2014), ResNet (2015), EfficientNet (2019) and ConvNeXt (2022) — to see how the
+evolution in architecture design impacted the performance a small sized dataset.
+
 See `doc/experiments.md` for a log of all runs with notes on configurations and results.
