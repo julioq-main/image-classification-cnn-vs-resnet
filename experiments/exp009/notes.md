@@ -65,10 +65,4 @@ this lead to better performing models as the val metrics relates to the train
 metrics during more epochs.
 
 More detailed interpretation will be provided in experiments.md with all the data.
-
-### Next
-
-After seen how augmentation can affect the performance of the data, we are now 
-moving to see how different algorithms does make a difference too.
-
 ---
