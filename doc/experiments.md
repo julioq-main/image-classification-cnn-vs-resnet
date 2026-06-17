@@ -350,4 +350,83 @@ be needed for a substantial improvement.
 
 ## 6. Overall Conclusions
 
-TO BE DONE
+After running nine experiments across four architectures, we can now draw some 
+broader conclusions. 
+
+### Architecture evolution
+
+The central finding is that architectural progress does not translate linearly
+to better performance in all settings. Newer architectures consistently
+outperform older ones when finetuned, but the ranking reverses when training
+from scratch on a small dataset.
+
+VGG16 (2014) was designed around simplicity: uniform 3×3 convolutions stacked
+sequentially, with large fully-connected layers as the classifier. On small
+datasets this simplicity is an advantage, as the optimization landscape is 
+straightforward enough to find useful local optima from random initialization.
+Its scratch performance (0.4063 test accuracy) is the best of all four models.
+
+ResNet50 (2015) introduced residual connections to solve the vanishing gradient
+problem and enable deeper networks. From scratch on this dataset, those
+connections introduce instability, the val loss oscillates rather than diverging
+cleanly suggesting the model is more sensitive to the small and noisy gradient
+estimates that come from having very few examples per class.Finetuned, it improves
+significantly over VGG16 (0.7749 vs 0.7091), showing that residual connections do
+produce better feature representations when starting from good pretrained weights.
+
+EfficientNet-B0 (2019) is the most efficient of all four in terms of computation
+vs accuracy. Its compound scaling approach achieves 0.7828 test accuracy finetuned,
+similar to ResNet50 and just little behind ConvNeXt, while using only ~5.3M 
+parameters and training in ~15 seconds per epoch compared to ResNet's ~25 seconds
+and ConvNeXt's ~44 seconds. From scratch it underperforms VGG16 but outperforms
+ResNet and ConvNeXt.
+
+ConvNeXt-Tiny (2022) shows the most dramatic dependence on pretraining of any
+model tested. It achieves the worst scratch performance (0.2171 test accuracy)
+and the best finetuned performance (0.8127), a gain of +0.5956, nearly double
+the gain of VGG16 (+0.3028). It was built around modern training recipes that
+assume large datasets, strong augmentation, and long training schedules. Without
+those conditions it struggles to find useful optima from scratch, but with 
+pretrained ImageNet weights it outperforms all other architectures.
+
+The broader pattern is clear: as architectures became more expressive and
+sophisticated, they increasingly assumed pretraining as a prerequisite for
+small datasets.
+
+### Practical recommendations
+
+These recommendations are grounded in the experimental results and apply
+specifically to small dataset classification tasks of similar scale (~4,800
+images, ~25 classes).
+
+If compute is constrained, EfficientNet-B0 finetuned is the most sensible option
+while if accuracy is the priority, ConvNeXt-Tiny finetuned is the way to go. Both
+can be trained with augmentation to improve the performance as augmentation was
+shown to modestly improve ConvNeXt finetuned and may benefit other architectures,
+though this was not tested. It is clear that using these models for training from
+scratch are not recommended, as the best scratch result was VGG16 at 0.4063,
+which is well below any finetuned model.
+
+### Limitations
+
+These experiments have several limitations that should be taken into account
+when interpreting the results.
+
+**Single run per experiment.** Each experiment was run once with a fixed seed.
+The results are reproducible but not statistically robust, small differences
+between models may be within the variance of a single run rather than a genuine
+performance gap. Multiple runs would be needed to make statistical claims about
+which differences are meaningful.
+
+**Optimizer and scheduler effect was not isolated.** AdamW with cosine annealing
+was fixed across all experiments as a pragmatic choice to isolate architecture
+and pretraining effects. Whether a different optimizer or scheduler would change
+the relative ranking of architectures is unknown.
+
+**Augmentation was only tested on one model and one setting.** The augmentation
+experiment was run on ConvNeXt-Tiny finetuned only. Its effect on scratch
+training or on other architectures may differ and was not measured.
+
+**Class imbalance was not addressed.** Some classes have significantly fewer
+examples than others. Underrepresented classes consistently underperformed across
+all runs, and class-weighted loss was not applied.
